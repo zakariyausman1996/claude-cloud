@@ -1,0 +1,109 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>AI SEO Myths</title>
+<style>html,body{margin:0;background:#000;height:100%;display:flex;align-items:center;justify-content:center}canvas{height:100vh;aspect-ratio:9/16}</style>
+</head><body><canvas id="c" width="1080" height="1920"></canvas>
+<script>
+const W=1080,H=1920,DUR=60,c=document.getElementById('c'),x=c.getContext('2d');
+const F='"Inter","Helvetica Neue",Arial,"DejaVu Sans",sans-serif';
+const C={bg:'#0b1020',ink:'#f5f7ff',dim:'#8a93b8',y:'#ffd23f',r:'#ff4d5e',g:'#3ddc97',b:'#4c8dff',o:'#ff9f1c'};
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const eo=t=>1-Math.pow(1-cl(t),3);
+const back=t=>{t=cl(t);const s=1.7;return 1+(s+1)*Math.pow(t-1,3)+s*Math.pow(t-1,2)};
+const p=(t,d,len=.45)=>cl((t-d)/len);
+
+function wrap(s,size,maxW,weight){x.font=`${weight} ${size}px ${F}`;const out=[];
+  for(const para of s.split('\n')){let line='';for(const w of para.split(' ')){const tr=line?line+' '+w:w;
+    if(x.measureText(tr).width>maxW&&line){out.push(line);line=w}else line=tr}out.push(line)}return out}
+function T(s,X,Y,size,col,o={}){const a=o.a??1;if(a<=0)return;const sc=o.s??1,wt=o.w??800,lh=size*(o.lh??1.15);
+  const lines=wrap(s,size,o.max??940,wt);x.save();x.globalAlpha=a;x.translate(X,Y);x.scale(sc,sc);
+  x.font=`${wt} ${size}px ${F}`;x.fillStyle=col;x.textAlign=o.al??'center';x.textBaseline='middle';
+  const y0=-(lines.length-1)*lh/2;lines.forEach((l,i)=>x.fillText(l,0,y0+i*lh));x.restore();return lines.length*lh}
+function RR(X,Y,w,h,r,fill,stroke,lw=6){x.beginPath();x.roundRect(X,Y,w,h,r);if(fill){x.fillStyle=fill;x.fill()}if(stroke){x.lineWidth=lw;x.strokeStyle=stroke;x.stroke()}}
+function stamp(t,label,col,Y=1000,rot=-.18){if(t<0)return;const k=eo(t/.25),s=3-2*k;x.save();x.globalAlpha=cl(t/.12);
+  x.translate(W/2,Y);x.rotate(rot);x.scale(s,s);x.font=`900 120px ${F}`;const w=x.measureText(label).width+80,fit=Math.min(1,900/w);x.scale(fit,fit);
+  RR(-w/2,-85,w,170,20,'rgba(11,16,32,.55)',col,14);x.fillStyle=col;x.textAlign='center';x.textBaseline='middle';x.fillText(label,0,6);x.restore()}
+function pill(s,X,Y,col,a=1,size=44){if(a<=0)return;x.save();x.globalAlpha=a;x.font=`800 ${size}px ${F}`;const w=x.measureText(s).width+60;
+  RR(X-w/2,Y-size*.9,w,size*1.8,size*.9,col+'22',col,4);x.restore();T(s,X,Y,size,col,{a})}
+
+const STAMPS=[3.0];
+// ---------- scenes ----------
+function hook(t){
+  const tags=[['llms.txt',260,560],['GEO secrets',790,480],['AI-only markup',300,1380],['Chunk everything!',760,1480],['AEO hacks',540,1650]];
+  tags.forEach(([s,X,Y],i)=>{const k=back(p(t,.1+i*.18,.5));pill(s,X,Y+Math.sin(t*2+i)*14,C.y,k*(t>3?.35:1),48)});
+  T("Everyone's selling",W/2,850,84,C.ink,{a:eo(p(t,.05)),s:.8+.2*back(p(t,.05))});
+  T('"AI SEO hacks."',W/2,970,110,C.y,{a:eo(p(t,.5)),s:.7+.3*back(p(t,.5))});
+  stamp(t-3,'IGNORED BY GOOGLE',C.r,1150,-.1);
+  T('...most of them do nothing.',W/2,1330,54,C.dim,{a:eo(p(t,3.7))});
+}
+function twist(t){
+  const k=eo(p(t,0)),out=eo(p(t,2.6,.4));
+  T("Google's answer?",W/2,560-out*260,70,C.dim,{a:k});
+  T("It's still SEO.",W/2,720-out*300,140,C.g,{a:eo(p(t,.7)),s:.6+.4*back(p(t,.7,.5))});
+  if(t<2.8)return;const u=t-2.8;
+  T('How AI answers work',W/2,560,50,C.dim,{a:eo(p(u,0))});
+  pill('Your question',W/2,690,C.b,back(p(u,.1)),50);
+  const kids=[180,400,680,900];
+  kids.forEach((X,i)=>{const a=eo(p(u,.6+i*.1));x.save();x.globalAlpha=a;x.strokeStyle=C.b;x.lineWidth=5;x.setLineDash([14,12]);x.lineDashOffset=-u*60;
+    x.beginPath();x.moveTo(W/2,740);x.lineTo(W/2+(X-W/2)*a,740+170*a);x.stroke();x.restore();
+    RR(X-95,920,190,60,30,C.b+'33',C.b,3);x.globalAlpha=a;T('search '+(i+1),X,950,32,C.b,{a});x.globalAlpha=1;
+    const a2=eo(p(u,1.4+i*.1));RR(X-80,1040+(1-a2)*40,160,190,16,null,null);x.globalAlpha=a2;RR(X-80,1040+(1-a2)*40,160,190,16,'#1b2446',C.dim,3);
+    for(let j=0;j<4;j++)RR(X-55,1075+j*38+(1-a2)*40,110-(j%2)*40,14,7,'#3a4575');x.globalAlpha=1});
+  T('"fan-out": extra related searches',W/2,1300,40,C.dim,{a:eo(p(u,1.2))});
+  const a3=back(p(u,2.3,.5));x.save();x.globalAlpha=cl(a3);x.translate(W/2,1470);x.scale(a3,a3);RR(-380,-90,760,180,28,C.g+'22',C.g,5);x.restore();
+  T('AI answer + links to pages',W/2,1470,50,C.g,{a:cl(a3),s:cl(a3)});
+  T('Pages come from regular Search rankings.',W/2,1680,46,C.ink,{a:eo(p(u,3.1)),max:900});
+}
+const MYTHS=[
+ ['You need an llms.txt file for AI search.','Google Search ignores it. No special AI files, markup or Markdown needed.'],
+ ['Chop your content into bite-size chunks.','Google understands multi-topic pages. There is no ideal page length.'],
+ ['Rewrite pages for AI and every long-tail keyword.','AI understands synonyms and meaning. Write for people.'],
+ ['AI search needs special schema markup.','No AI-only schema. Keep structured data for rich results.'],
+ ['More page variations = more AI visibility.','Mass-produced variations can violate the scaled content abuse spam policy.']];
+function myth(i){return t=>{const [m,truth]=MYTHS[i],last=i===4,k=back(p(t,0,.5));
+  T(last?'MYTH #5  (the risky one)':'MYTH #'+(i+1),W/2,380,58,last?C.o:C.y,{a:eo(p(t,0)),s:k});
+  RR(90,470,900,4,2,C.dim+'55');
+  T('"'+m+'"',W/2,720,82,C.ink,{a:eo(p(t,.3)),s:.9+.1*eo(p(t,.3)),max:900,lh:1.2});
+  stamp(t-2.6,'BUSTED',C.r,1000);
+  const a=eo(p(t,3.3,.5)),col=last?C.o:C.g;x.globalAlpha=a;RR(90,1180+(1-a)*80,900,440,36,col+'1c',col,5);x.globalAlpha=1;
+  T(last?'WARNING':'TRUTH',W/2,1250+(1-a)*80,44,col,{a});
+  T(truth,W/2,1430+(1-a)*80,60,C.ink,{a,max:800,w:700,lh:1.25});
+  T('Source: Google Search Central',W/2,1760,34,C.dim,{a:eo(p(t,4.5))});
+  // progress dots
+  for(let j=0;j<5;j++){x.beginPath();x.arc(W/2-120+j*60,250,j===i?14:10,0,7);x.fillStyle=j<=i?(j===4?C.o:C.y):'#2a3358';x.fill()}
+}}
+function checklist(t){
+  T('Do this instead',W/2,380,96,C.g,{a:eo(p(t,0)),s:.8+.2*back(p(t,0))});
+  const items=['Original, people-first content','Crawlable + indexed pages','Eligible for snippets','Merchant Center & Business Profile','Track it in Search Console'];
+  items.forEach((s,i)=>{const d=.6+i*.9,a=eo(p(t,d)),Y=640+i*210;x.globalAlpha=a;RR(90+(1-a)*-60,Y-80,900,160,28,'#161e3a');x.globalAlpha=1;
+    const ck=back(p(t,d+.35,.35));x.save();x.translate(180,Y);x.scale(ck,ck);x.beginPath();x.arc(0,0,46,0,7);x.fillStyle=C.g;x.fill();
+    x.strokeStyle=C.bg;x.lineWidth=12;x.lineCap='round';x.beginPath();x.moveTo(-20,2);x.lineTo(-5,18);x.lineTo(22,-16);x.stroke();x.restore();
+    T(s,260,Y,50,C.ink,{a,al:'left',max:700})});
+  T('Screenshot this.',W/2,1730,48,C.y,{a:eo(p(t,5.4))});
+}
+function outro(t){
+  T('Skip the hacks.',W/2,720,110,C.ink,{a:eo(p(t,0)),s:.8+.2*back(p(t,0))});
+  T('Do great SEO.',W/2,870,120,C.g,{a:eo(p(t,.4)),s:.8+.2*back(p(t,.4))});
+  T('Beware tools claiming "internal Google data." None have it.',W/2,1120,48,C.dim,{a:eo(p(t,1)),max:860});
+  T('Follow for more',W/2,1500,56,C.y,{a:eo(p(t,1.6)),s:1+.04*Math.sin(t*6)});
+  T('Based on Google Search Central: "Optimizing for generative AI features"',W/2,1760,32,C.dim,{a:eo(p(t,1.2)),max:900});
+}
+const SC=[[0,5,hook],[5,12,twist]];
+MYTHS.forEach((_,i)=>{const s=12+i*7.6;SC.push([s,s+7.6,myth(i)]);STAMPS.push(s+2.6)});
+SC.push([50,57,checklist],[57,60,outro]);
+
+function bg(t){x.fillStyle=C.bg;x.fillRect(0,0,W,H);
+  const g=x.createRadialGradient(W/2+Math.sin(t*.4)*300,700+Math.cos(t*.3)*300,50,W/2,H/2,1300);
+  g.addColorStop(0,'rgba(76,141,255,.22)');g.addColorStop(1,'rgba(11,16,32,0)');x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.strokeStyle='rgba(255,255,255,.04)';x.lineWidth=2;const o=(t*30)%90;
+  for(let X=-90+o;X<W;X+=90){x.beginPath();x.moveTo(X,0);x.lineTo(X,H);x.stroke()}
+  for(let Y=-90+o;Y<H;Y+=90){x.beginPath();x.moveTo(0,Y);x.lineTo(W,Y);x.stroke()}}
+
+function render(t){x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;bg(t);
+  let sh=0;for(const s of STAMPS){const d=t-s-.2;if(d>0&&d<.35)sh=Math.max(sh,(1-d/.35)*22)}
+  x.translate(Math.sin(t*90)*sh,Math.cos(t*70)*sh);
+  for(const [s,e,fn] of SC)if(t>=s&&t<e){const lt=t-s,fade=cl((e-t)/.25);x.save();x.globalAlpha=1;fn(lt);x.restore();
+    if(fade<1){x.setTransform(1,0,0,1,0,0);x.fillStyle=`rgba(11,16,32,${1-fade})`;x.fillRect(0,0,W,H)}}
+  x.setTransform(1,0,0,1,0,0);RR(0,0,W*t/DUR,12,0,C.y);}
+window.render=render;
+if(!location.hash.includes('render')){const st=performance.now();(function loop(){render(((performance.now()-st)/1000)%DUR);requestAnimationFrame(loop)})()}
+</script></body></html>
