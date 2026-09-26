@@ -134,7 +134,7 @@ t=>{storyHead(1,t);const tg=wt(1,'global'),te=wt(1,'Earlier'),tm=wt(1,'Mueller')
     rows.forEach(([m,d,l],i)=>{const py=740+i*110,last=i===3,g=eio(pr(t,last?wt(1,'took')+.3:te+.1+i*.15,last?1.2:.5));
       text(m,90,py+32,32,last?K.ink:K.sub,{w:700});rr(300,py+8,640,48,24,'#e5e7eb');rr(300,py+8,Math.max(48,640*d/14*g),48,24,last?K.red:K.blue);
       text(l,last?(300+Math.max(48,640*g)-20):(300+640*d/14+70),py+33,26,last?'#fff':K.sub,{w:700,al:last?'right':'left',a:cl(g*2)})});
-    quote('This one will likely take longer than some of the previous ones.','John Mueller, Google',540,1300,pr(t,tm-.2,.5));x.restore()}
+    quote('…likely take longer than some of the previous ones.','John Mueller, Google',540,1300,pr(t,tm-.2,.5));x.restore()}
   // C: 4th spam update + volatility screenshot
   const C=eo(pr(t,tf-.1,.4));if(C>0){x.save();x.globalAlpha*=C;
     for(let i=0;i<4;i++){const a=back(pr(t,tf+i*.15,.4)),cx=240+i*200,cy=760,on=i===3;x.save();x.translate(cx,cy);x.scale(a,a);
