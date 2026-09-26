@@ -1,0 +1,199 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>GEO Explained</title>
+<style>
+@font-face{font-family:Inter;font-weight:400;src:url(fonts/inter-400.woff2)}
+@font-face{font-family:Inter;font-weight:600;src:url(fonts/inter-600.woff2)}
+@font-face{font-family:Inter;font-weight:700;src:url(fonts/inter-700.woff2)}
+@font-face{font-family:Inter;font-weight:800;src:url(fonts/inter-800.woff2)}
+@font-face{font-family:Mono;font-weight:500;src:url(fonts/mono-500.woff2)}
+html,body{margin:0;height:100%;background:#111;display:flex;align-items:center;justify-content:center}
+canvas{height:100vh;aspect-ratio:9/16}
+</style></head><body><canvas id="c" width="1080" height="1920"></canvas>
+<script src="timeline.js"></script>
+<script>
+const W=1080,H=1920,c=document.getElementById('c'),X=c.getContext('2d');
+const off=document.createElement('canvas');off.width=W;off.height=H;const O=off.getContext('2d');
+const K={bg:'#f3f4f6',ink:'#0f172a',sub:'#64748b',mute:'#94a3b8',line:'#e2e8f0',card:'#ffffff',
+  blue:'#2563eb',blueS:'#dbeafe',red:'#dc2626',redS:'#fee2e2',green:'#16a34a',greenS:'#dcfce7',amber:'#d97706'};
+const FF='Inter, "DejaVu Sans", sans-serif';
+let x=O; // current draw target
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const eo=t=>1-Math.pow(1-cl(t),3), eio=t=>{t=cl(t);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
+const back=t=>{t=cl(t);const s=1.4;return 1+(s+1)*Math.pow(t-1,3)+s*Math.pow(t-1,2)};
+const pr=(t,d,len=.5)=>cl((t-d)/len);
+
+// ---------- primitives ----------
+function font(sz,w=700,mono){x.font=`${w} ${sz}px ${mono?'Mono, "DejaVu Sans Mono", monospace':FF}`}
+function wrap(s,sz,w,maxW,mono){font(sz,w,mono);const out=[];for(const para of s.split('\n')){let l='';
+  for(const wd of para.split(' ')){const tr=l?l+' '+wd:wd;if(x.measureText(tr).width>maxW&&l){out.push(l);l=wd}else l=tr}out.push(l)}return out}
+function text(s,px,py,sz,col,o={}){const a=o.a??1;if(a<=.001)return 0;const w=o.w??700,lh=sz*(o.lh??1.18);
+  const lines=wrap(s,sz,w,o.max??900,o.mono);x.save();x.globalAlpha*=a;font(sz,w,o.mono);x.fillStyle=col;
+  x.textAlign=o.al??'left';x.textBaseline='middle';if(o.ls)x.letterSpacing=o.ls+'px';
+  lines.forEach((l,i)=>x.fillText(l,px,py+i*lh+(o.dy??0)));x.restore();return lines.length*lh}
+function rr(px,py,w,h,r,fill,stroke,lw=3,shadow){x.save();if(shadow){x.shadowColor='rgba(15,23,42,.10)';x.shadowBlur=40;x.shadowOffsetY=14}
+  x.beginPath();x.roundRect(px,py,w,h,r);if(fill){x.fillStyle=fill;x.fill()}x.shadowColor='transparent';
+  if(stroke){x.lineWidth=lw;x.strokeStyle=stroke;x.stroke()}x.restore()}
+function tagPill(s,px,py,a=1,col=K.ink,al='left',sz=26){if(a<=0)return;font(sz,700);x.save();x.letterSpacing='3px';
+  const w=x.measureText(s).width+48;x.restore();const X0=al==='center'?px-w/2:px;x.save();x.globalAlpha*=a;
+  rr(X0,py-sz,w,sz*2,sz,'#fff',col===K.ink?'#cbd5e1':col,2.5);x.restore();text(s,X0+24,py+1,sz,col,{a,ls:3})}
+function callout(s,px,py,a,col=K.blue){if(a<=0)return;const s2=.85+.15*back(a);x.save();x.translate(px,py);x.scale(s2,s2);
+  font(28,800);x.letterSpacing='3px';const w=x.measureText(s).width+60;x.letterSpacing='0px';x.globalAlpha*=cl(a*2);
+  rr(-w/2,-34,w,68,34,'#fff',col,3,true);text(s,0,1,28,col,{al:'center',w:800,ls:3});x.restore()}
+function skel(px,py,w,h,a=1,col='#e5e7eb'){x.save();x.globalAlpha*=a;rr(px,py,w,h,h/2,col);x.restore()}
+function isoLayer(cx,cy,w,d,h,a,hi){x.save();x.globalAlpha*=a;const L=[cx-w/2,cy],T=[cx,cy-d/2],R=[cx+w/2,cy],B=[cx,cy+d/2];
+  x.fillStyle=hi?'#bfdbfe':'#c7d2fe';x.beginPath();x.moveTo(...L);x.lineTo(...B);x.lineTo(B[0],B[1]+h);x.lineTo(L[0],L[1]+h);x.fill();
+  x.fillStyle=hi?'#93c5fd':'#a5b4fc';x.beginPath();x.moveTo(...B);x.lineTo(...R);x.lineTo(R[0],R[1]+h);x.lineTo(B[0],B[1]+h);x.fill();
+  x.fillStyle=hi?'#eff6ff':'#eef2ff';x.strokeStyle=hi?K.blue:'#818cf8';x.lineWidth=2;x.beginPath();x.moveTo(...L);x.lineTo(...T);x.lineTo(...R);x.lineTo(...B);x.closePath();x.fill();x.stroke();
+  x.save();x.transform(w/2/16,-d/2/16,w/2/16,d/2/16,L[0],L[1]);x.fillStyle=hi?'rgba(37,99,235,.55)':'rgba(79,70,229,.35)';
+  for(let i=1;i<16;i++)for(let j=1;j<16;j++)if((i*7+j*13)%5)x.fillRect(i-.18,j-.18,.36,.36);x.restore();x.restore()}
+function pageCard(px,py,w,h,a,o={}){if(a<=0)return;x.save();x.globalAlpha*=a;rr(px,py,w,h,18,'#fff',o.stroke??K.line,o.stroke?4:2,true);
+  skel(px+24,py+28,w*.55,16,1,o.stroke?'#93c5fd':'#cbd5e1');for(let i=0;i<3;i++)skel(px+24,py+62+i*26,w-48-(i%2)*50,11);x.restore()}
+function badge(s,cx,cy,a,col=K.blue){if(a<=0)return;x.save();x.globalAlpha*=a;x.translate(cx,cy);x.scale(back(a),back(a));
+  x.beginPath();x.arc(0,0,30,0,7);x.fillStyle=col;x.fill();text(s,0,1,28,'#fff',{al:'center',w:800});x.restore()}
+function crossBadge(cx,cy,a,r=34){if(a<=0)return;x.save();x.globalAlpha*=cl(a*2);x.translate(cx,cy);x.scale(back(a),back(a));
+  x.beginPath();x.arc(0,0,r,0,7);x.fillStyle=K.red;x.fill();x.strokeStyle='#fff';x.lineWidth=r*.2;x.lineCap='round';
+  const q=r*.38;x.beginPath();x.moveTo(-q,-q);x.lineTo(q,q);x.moveTo(q,-q);x.lineTo(-q,q);x.stroke();x.restore()}
+function sparkle(cx,cy,r,col){x.save();x.translate(cx,cy);x.fillStyle=col;x.beginPath();
+  for(let i=0;i<8;i++){const a=i*Math.PI/4,rad=i%2?r*.28:r;x.lineTo(Math.cos(a)*rad,Math.sin(a)*rad)}x.fill();x.restore()}
+function searchBar(px,py,w,q,shown,a,caret){if(a<=0)return;x.save();x.globalAlpha*=a;rr(px,py,w,120,60,'#fff',K.line,2,true);
+  x.strokeStyle=K.sub;x.lineWidth=5;x.beginPath();x.arc(px+62,py+56,16,0,7);x.stroke();x.beginPath();x.moveTo(px+74,py+68);x.lineTo(px+88,py+82);x.stroke();
+  const s=q.slice(0,shown);text(s,px+112,py+61,40,K.ink,{w:600,max:w-150});
+  if(caret){font(40,600);const cw=x.measureText(s).width;if(Math.floor(caret*2.2)%2===0)rr(px+116+cw,py+36,4,50,2,K.blue)}x.restore()}
+// headline with per-word stagger
+function headline(s,t,t0,a=1){const ws=s.split(' ');font(76,800);let px=90,py=440,out=[];
+  ws.forEach((w,i)=>{const ww=x.measureText(w+' ').width;if(px+ww>1000){px=90;py+=90}out.push([w,px,py,i]);px+=ww});
+  out.forEach(([w,px,py,i])=>{const k=eo(pr(t,t0+i*.06,.45));text(w,px,py+(1-k)*30,76,K.ink,{a:k*a,w:800,max:2000})})}
+
+// ---------- timeline helpers ----------
+const S=TL.scenes;
+function wt(i,word,n=0){const ws=S[i].words.filter(w=>w.w.toLowerCase().replace(/[^a-z0-9.'-]/g,'')===word.toLowerCase());
+  return (ws[n]||ws[0]||{t:S[i].start}).t-S[i].start}
+
+// ---------- scenes ----------
+const TAGS=['THE QUESTION','STEP 1 · RETRIEVAL','STEP 2 · QUERY FAN-OUT','STEP 3 · THE ANSWER','WHAT GETS PICKED','WHAT YOU DON’T NEED','MEASURE','THE TAKEAWAY'];
+const Q='best running shoes for flat feet';
+const SC=[
+// 0 HOOK
+t=>{const tb=wt(0,'But');const out=eo(pr(t,tb-.2,.4));
+  if(out<1)headline('Everyone’s selling GEO.',t,.1,1-out);
+  headline('So how does AI pick pages?',t,tb,out);
+  // GEO wordmark
+  if(out<1){x.save();x.globalAlpha*=1-out;const letters=['G','E','O'];letters.forEach((l,i)=>{const k=back(pr(t,.9+i*.12,.5));
+    x.save();x.translate(300+i*240,1000-(1-k)*120);x.globalAlpha*=cl(k);rr(-105,-130,210,260,36,'#fff',K.line,2,true);text(l,0,6,170,i?K.ink:K.blue,{al:'center',w:800});x.restore()});
+    const g=wt(0,'Generative'),e=wt(0,'engine'),o=wt(0,'optimization');
+    [['Generative',g,300],['Engine',e,540],['Optimization',o,780]].forEach(([s,tt,px])=>text(s,px,1195,34,K.sub,{al:'center',w:600,a:eo(pr(t,tt,.3))}));
+    callout('THE NEW AI-SEO BUZZWORD',540,1330,pr(t,o+.3,.5),K.amber);x.restore()}
+  if(out>0){const ty=pr(t,tb+.4,1.6),n=Math.floor(Q.length*ty);
+    searchBar(90,640+(1-out)*60,900,Q,n,out,ty<1?t:0);
+    const ta=wt(0,'follow');const a=eo(pr(t,ta-.8,.5));
+    if(a>0){x.save();x.globalAlpha*=a;rr(90,810+(1-a)*40,900,560,32,'#fff',K.line,2,true);sparkle(140,870,20,K.blue);
+      text('AI answer',172,870,32,K.ink,{w:700});for(let i=0;i<5;i++){const g=eo(pr(t,ta-.6+i*.12,.5));skel(130,930+i*44,(i===4?420:780)*g,16)}
+      ['runnersworld.example','podiatry.example'].forEach((s,i)=>{const k=pr(t,ta+.1+i*.15,.4);x.save();x.globalAlpha*=eo(k);font(26,600);const w=x.measureText(s).width+40;
+        rr(130+i*330,1180,w,56,28,'#f1f5f9',K.line,2);text(s,150+i*330,1209,26,K.sub,{w:600});x.restore()});
+      const k=pr(t,ta+.5,.5),pl=1+.05*Math.sin(t*7);x.save();x.globalAlpha*=eo(k);x.translate(250,1290);x.scale(pl,pl);
+      rr(-120,-30,300,60,30,K.blueS,K.blue,3);text('yoursite.com ?',30,1,28,K.blue,{al:'center',w:800});x.restore();x.restore()}}},
+// 1 RETRIEVAL
+t=>{headline('It retrieves. It doesn’t invent.',t,.05);const tp=wt(1,'pulls'),tr=wt(1,'ranking');
+  callout('THE SEARCH INDEX',330,1455,pr(t,.6,.5),K.ink);
+  for(let i=8;i>=0;i--){const k=eo(pr(t,.3+(8-i)*.07,.4));isoLayer(330,820+i*52+(1-k)*60,500,280,16,k,false)}
+  const res=[['#1',760],['#2',960],['#3',1160]];
+  res.forEach(([r,py],i)=>{const k=eio(pr(t,tp+i*.2,.8));const sx=lerp(250,640,k),sy=lerp(840,py,k),sc=lerp(.5,1,k);
+    if(k<=0)return;x.save();x.translate(sx,sy);x.scale(sc,sc);pageCard(0,-80,340,160,cl(k*3),{stroke:i===0?K.blue:null});x.restore();
+    badge(r,sx+340*sc,sy-80*sc,pr(t,tp+i*.2+.7,.35),i===0?K.blue:K.ink)});
+  callout('SAME RANKING SYSTEMS AS SEARCH',540,1555,pr(t,tr,.5))},
+// 2 FAN-OUT
+t=>{headline('One question becomes many.',t,.05);const tr=wt(2,'related'),tm=wt(2,'more');
+  const subs=['arch support','overpronation','stability shoes','flat feet tips','shoe reviews'];const cx=540,cy=1050;
+  subs.forEach((s,i)=>{const ang=-Math.PI/2+i*(2*Math.PI/5),k=eo(pr(t,tr+i*.12,.5));const sx=cx+Math.cos(ang)*360,sy=cy+Math.sin(ang)*300;
+    if(k<=0)return;x.save();x.strokeStyle=K.blue;x.globalAlpha*=.6*k;x.lineWidth=3;x.setLineDash([12,10]);x.lineDashOffset=-t*50;
+    x.beginPath();x.moveTo(cx,cy);x.lineTo(lerp(cx,sx,k),lerp(cy,sy,k));x.stroke();x.restore();
+    if(t>tm-.5)for(let j=0;j<3;j++){const f=((t-(tm-.5))*.9+j/3)%1;x.save();x.globalAlpha*=Math.sin(f*Math.PI);rr(lerp(sx,cx,f)-14,lerp(sy,cy,f)-18,28,36,5,'#fff',K.blue,2.5);x.restore()}
+    x.save();x.translate(sx,sy);x.scale(back(k),back(k));font(30,700);const w=x.measureText(s).width+56;x.globalAlpha*=cl(k*2);
+    rr(-w/2,-36,w,72,36,'#fff',K.line,2,true);text(s,0,1,30,K.ink,{al:'center',w:700});x.restore()});
+  const k=back(pr(t,.4,.5));x.save();x.translate(cx,cy);x.scale(k,k);rr(-190,-70,380,140,28,K.ink);sparkle(-130,0,18,'#93c5fd');
+  text('running shoes',-100,-18,32,'#fff',{w:700});text('for flat feet',-100,22,32,'#94a3b8',{w:600});x.restore();
+  callout('6 SEARCHES → 1 ANSWER',540,1480,pr(t,tm,.5))},
+// 3 ANSWER
+t=>{headline('Written from pages. With links.',t,.05);const tl=wt(3,'links'),tq=wt(3,'Would'),tg=wt(3,'real');const up=eio(pr(t,tg-.2,.7));
+  x.save();x.translate(0,-up*10);rr(90,620,900,520,32,'#fff',K.line,2,true);sparkle(140,680,20,K.blue);text('AI answer',172,680,32,K.ink,{w:700});
+  for(let i=0;i<6;i++){const g=eio(pr(t,.3+i*.28,.6));skel(130,745+i*44,(i===5?480:800)*g,16,1,i<3?'#dbeafe':'#e5e7eb')}
+  let cx0=130;['runnersworld.example','podiatry.example','yoursite.com'].forEach((s,i)=>{font(24,700);const w=x.measureText(s).width+64,px=cx0;cx0+=w+14;const k=pr(t,tl-.1+i*.15,.4);if(k<=0)return;x.save();x.globalAlpha*=eo(k);
+    const _p=0,hi=i===2;rr(px,1040-(1-eo(k))*20,w,56,28,hi?K.blueS:'#f1f5f9',hi?K.blue:K.line,hi?3:2);
+    x.strokeStyle=hi?K.blue:K.sub;x.lineWidth=3;x.beginPath();x.arc(px+26,1068,7,0,7);x.stroke();text(s,px+44,1069,24,hi?K.blue:K.sub,{w:700});x.restore()});x.restore();
+  const a=eo(pr(t,tg,.5));if(a>0){x.save();x.globalAlpha*=a;tagPill('THE REAL GEO QUESTION',540,1190+(1-a)*30,1,K.blue,'center');
+    const qk=eo(pr(t,tq,.4));text('Would your page rank?',540,1320,80,K.ink,{al:'center',w:800,a:qk,max:1000});
+    font(80,800);const w=x.measureText('Would your page rank?').width;rr(540-w/2,1375,w*eio(pr(t,tq+.5,.7)),10,5,K.blue);x.restore()}},
+// 4 NON-COMMODITY
+t=>{headline('Be the page that exists once.',t,.05);const tt=wt(4,'Top'),ti=wt(4,'I'),te=wt(4,'once');const dim=eio(pr(t,ti-.2,.6));
+  for(let r=0;r<4;r++)for(let q=0;q<3;q++){const i=r*3+q,k=eo(pr(t,tt-.3+i*.05,.35));if(k<=0)continue;const px=100+q*300,py=640+r*190+dim*40;
+    x.save();x.globalAlpha*=k*(1-.8*dim);rr(px,py,280,165,16,'#fff',K.line,2);text('Top 10 Running',px+22,py+40,24,K.sub,{w:700});text('Shoes (2026)',px+22,py+70,24,K.sub,{w:700});
+    skel(px+22,py+105,200,10);skel(px+22,py+128,150,10);x.restore()}
+  callout('× 1,000',840,610,pr(t,tt+.6,.4)*(1-dim),K.sub);
+  const k=eo(pr(t,ti,.7));if(k>0){x.save();x.globalAlpha*=k;x.translate(0,(1-k)*120);rr(130,820,820,440,32,'#fff',K.blue,4,true);
+    x.beginPath();x.arc(210,900,40,0,7);x.fillStyle=K.blueS;x.fill();text('R',210,902,36,K.blue,{al:'center',w:800});
+    text('Real runner review',272,885,26,K.sub,{w:600});text('Verified · 500 mi',272,920,24,K.mute,{w:600});
+    text('“I ran 500 miles in these on flat feet.”',180,1030,50,K.ink,{w:800,max:720,lh:1.2});
+    ['FIRST-HAND','UNIQUE VIEW'].forEach((s,i)=>tagPill(s,180+i*260,1200,eo(pr(t,ti+.6+i*.15,.4)),K.green,'left',22));x.restore();
+    badge('×1',900,830,pr(t,te,.4),K.green)}
+  callout('NON-COMMODITY CONTENT',540,1480,pr(t,te+.2,.5),K.green)},
+// 5 HACKS
+t=>{headline('Skip the hacks.',t,.05);const rows=[['llms.txt',wt(5,'llms.txt')],['<meta ai-only-markup>',wt(5,'markup')],['page-chunk-01…40.html',wt(5,'Chopping')]];
+  const tg=wt(5,'Google');
+  rows.forEach(([s,tt],i)=>{const k=eo(pr(t,tt-.15,.4));if(k<=0)return;const py=660+i*230;x.save();x.globalAlpha*=k;x.translate((1-k)*80,0);
+    rr(90,py,900,180,24,'#fff',K.line,2,true);rr(130,py+45,70,90,10,'#f1f5f9',K.line,2);skel(145,py+70,40,8);skel(145,py+90,30,8);
+    text(s,230,py+90,38,K.ink,{w:500,mono:true,max:600});
+    const sk=eio(pr(t,tg+i*.2,.4));if(sk>0){font(38,500,true);const w=x.measureText(s).width;rr(222,py+86,(w+16)*sk,6,3,K.red);
+      crossBadge(920,py+90,pr(t,tg+i*.2+.2,.35),30)}x.restore()});
+  callout('GOOGLE: NOT NEEDED',540,1480,pr(t,wt(5,'need')-.2,.5),K.red)},
+// 6 MEASURE
+t=>{headline('Measure what’s real.',t,.05);const tn=wt(6,'No');const a=eo(pr(t,.2,.5));
+  x.save();x.globalAlpha*=a;rr(90,620,900,560,32,'#fff',K.line,2,true);text('Search Console',140,680,26,K.sub,{w:600});
+  text('Generative AI performance',140,722,38,K.ink,{w:800});
+  [['Impressions',48210,K.blue],['Clicks',3190,K.green]].forEach(([l,v,col],i)=>{const n=Math.round(v*eio(pr(t,.6,1.6)));
+    rr(140+i*410,780,380,130,20,i?K.greenS:K.blueS);text(l,170+i*410,818,24,col,{w:700});text(n.toLocaleString('en-US'),170+i*410,868,46,K.ink,{w:800})});
+  const g=eio(pr(t,.8,2));x.save();x.beginPath();x.rect(140,930,800*g,220);x.clip();
+  [[K.blue,0,1],[K.green,40,.55]].forEach(([col,off,amp])=>{x.beginPath();for(let i=0;i<=40;i++){const px=140+i*20,py=1130-off-amp*(i*3.2+Math.sin(i*.9)*18+Math.sin(i*.33)*14);i?x.lineTo(px,py):x.moveTo(px,py)}
+    x.strokeStyle=col;x.lineWidth=5;x.lineJoin='round';x.stroke()});x.restore();text('sample data',940,1160,20,K.mute,{al:'right',w:600});x.restore();
+  const k=eo(pr(t,tn-.1,.5));if(k>0){x.save();x.globalAlpha*=k;x.translate(0,(1-k)*60);rr(90,1250,900,150,28,K.redS,'#fca5a5',2);
+    text('“Our tool sees Google’s internal data!”',140,1325,34,'#7f1d1d',{w:700,max:720});crossBadge(930,1325,pr(t,tn+.8,.35),34);x.restore()}
+  callout('NO OUTSIDE TOOL HAS IT',540,1480,pr(t,wt(6,'internal'),.5),K.red)},
+// 7 OUTRO
+t=>{const ts=wt(7,'SEO'),td=wt(7,'done'),tf=wt(7,'Follow');const flip=pr(t,ts-.25,.5);
+  ['G','E','O'].forEach((l,i)=>{const k=back(pr(t,.1+i*.1,.5));x.save();x.translate(300+i*240,860);x.globalAlpha*=cl(k);
+    let s=l,col=K.ink;if(i===0){const f=Math.cos(flip*Math.PI);x.scale(1,Math.abs(f)||.001);if(flip>.5){s='S';col=K.blue}}
+    rr(-105,-130,210,260,36,'#fff',i===0&&flip>.5?K.blue:K.line,i===0&&flip>.5?4:2,true);text(s,0,6,170,col,{al:'center',w:800});x.restore()});
+  text('isn’t a new game.',540,1080,52,K.sub,{al:'center',w:700,a:eo(pr(t,.6,.5))*(1-eo(pr(t,ts-.3,.3)))});
+  text('It’s SEO, done really well.',540,1080,58,K.ink,{al:'center',w:800,a:eo(pr(t,td-.2,.4))});
+  callout('FOLLOW FOR MORE',540,1300,pr(t,tf,.5));
+  text('Source: Google Search Central — “Optimizing your website for generative AI features on Google Search”',540,1450,24,K.mute,{al:'center',w:600,max:860,a:eo(pr(t,.8,.5))})},
+];
+
+// ---------- captions ----------
+const ALLW=S.flatMap((s,si)=>s.words.map(w=>({...w,si})));const CH=[];
+ALLW.forEach((w,i)=>{const p=ALLW[i-1],cur=CH[CH.length-1];
+  if(!cur||cur.w.length>=3||w.si!==p.si||w.t-(p.t+p.d)>.22)CH.push({w:[w]});else cur.w.push(w)});
+CH.forEach((c,i)=>{c.t0=c.w[0].t;const l=c.w[c.w.length-1];c.t1=Math.min(CH[i+1]?CH[i+1].w[0].t:1e9,l.t+l.d+.5)});
+function captions(T){const c=CH.find(c=>T>=c.t0&&T<c.t1);if(!c)return;const words=c.w.map(w=>w.w);font(60,800);
+  const full=words.join(' '),w=x.measureText(full).width+80,k=eo((T-c.t0)/.15);x.save();x.translate(540,1690);x.scale(.94+.06*k,.94+.06*k);
+  rr(-w/2,-58,w,116,30,'rgba(15,23,42,.92)');let px=-w/2+40;
+  c.w.forEach(ww=>{const s=ww.w+' ',on=T>=ww.t-.03;text(ww.w,px,2,60,on?(T<ww.t+ww.d+.05?'#ffffff':'#cbd5e1'):'rgba(255,255,255,.18)',{w:800,max:3000});px+=x.measureText(s).width});x.restore()}
+
+// ---------- frame ----------
+function bgDraw(t){x.fillStyle=K.bg;x.fillRect(0,0,W,H);x.strokeStyle='rgba(15,23,42,.045)';x.lineWidth=2;
+  for(let i=0;i<=W;i+=60){x.beginPath();x.moveTo(i,0);x.lineTo(i,H);x.stroke()}for(let j=0;j<=H;j+=60){x.beginPath();x.moveTo(0,j);x.lineTo(W,j);x.stroke()}
+  const g=x.createRadialGradient(540,1000,100,540,1000,1100);g.addColorStop(0,'rgba(255,255,255,.85)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,W,H)}
+function render(T){x=X;X.setTransform(1,0,0,1,0,0);X.globalAlpha=1;bgDraw(T);
+  let si=S.findIndex((s,i)=>T<s.start+s.dur&&(i===S.length-1||T<S[i+1].start));if(si<0)si=S.length-1;
+  const s=S[si],lt=T-s.start,end=si===S.length-1?TL.total-s.start:s.dur,fin=eo(lt/.3),fout=si===S.length-1?1:1-eio((lt-(end-.3))/.3);
+  // scene into offscreen (transparent) then composite
+  x=O;O.setTransform(1,0,0,1,0,0);O.globalAlpha=1;O.clearRect(0,0,W,H);SC[si](lt);x=X;
+  X.save();X.globalAlpha=Math.min(fin,fout);X.drawImage(off,0,(1-Math.min(fin,fout))*(lt<.5?40:-40));X.restore();
+  // chrome: tag + segmented progress
+  const tk=eo(pr(lt,0,.35));tagPill(TAGS[si],90,330,tk);
+  for(let i=0;i<S.length;i++){const px=990-(S.length-i)*54+10,f=i<si?1:i>si?0:cl(lt/s.dur);rr(px,324,44,8,4,'#d1d5db');if(f>0)rr(px,324,44*f,8,4,K.ink)}
+  captions(T)}
+window.render=render;window.TOTAL=TL.total;
+window.ready=Promise.all(['400','600','700','800'].map(w=>document.fonts.load(`${w} 40px Inter`)).concat(document.fonts.load('500 40px Mono')));
+if(!location.hash.includes('render'))window.ready.then(()=>{const a=new Audio('build/voice.m4a');let st=null;
+  document.body.onclick=()=>{a.currentTime=0;a.play()};(function loop(){render(a.paused?((performance.now()/1000)%TL.total):a.currentTime);requestAnimationFrame(loop)})()});
+</script></body></html>
