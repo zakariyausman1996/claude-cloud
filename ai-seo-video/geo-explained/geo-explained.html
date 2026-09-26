@@ -345,10 +345,10 @@ function bgDraw(){x.fillStyle=K.bg;x.fillRect(0,0,W,1350);x.strokeStyle='rgba(15
   for(let i=0;i<=W;i+=52){x.beginPath();x.moveTo(i,0);x.lineTo(i,1350);x.stroke()}for(let j=0;j<=1350;j+=52){x.beginPath();x.moveTo(0,j);x.lineTo(W,j);x.stroke()}
   const g=x.createRadialGradient(540,600,80,540,600,900);g.addColorStop(0,'rgba(255,255,255,.85)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,W,1350)}
 function sourceBar(si,lt){const s=SOURCES[si]&&srcAt(si,lt);if(!s)return;const k=eo(pr(lt,Math.max(0,...SOURCES[si].filter(([w,v])=>v===s).map(([w])=>wt(si,w)-.1).filter(v=>v<=lt)),.35));
-  x.save();x.globalAlpha*=k;text('SOURCE',330,1268,17,K.blue,{w:800,ls:2});text(s,425,1268,18,K.sub,{w:600,max:600,lh:1.25});x.restore()}
-function watermark(a){if(a<=0)return;x.save();x.globalAlpha=.9*a;const cx=62,cy=1280;x.beginPath();x.arc(cx,cy,34,0,7);x.fillStyle='#fff';x.fill();
+  x.save();x.globalAlpha*=k;text('SOURCE',40,1268,17,K.blue,{w:800,ls:2});text(s,135,1268,18,K.sub,{w:600,max:630,lh:1.25});x.restore()}
+function watermark(a){if(a<=0)return;x.save();x.globalAlpha=.9*a;const cx=1018,cy=1280;x.beginPath();x.arc(cx,cy,34,0,7);x.fillStyle='#fff';x.fill();
   x.save();x.beginPath();x.arc(cx,cy,31,0,7);x.clip();if(IMG.me.width)x.drawImage(IMG.me,cx-31,cy-31,62,62);x.restore();x.lineWidth=3;x.strokeStyle=K.blue;x.beginPath();x.arc(cx,cy,32,0,7);x.stroke();
-  text('By Zakariya',108,1281,24,K.ink,{w:800});x.restore()}
+  text('By Zakariya',cx-46,1281,24,K.ink,{w:800,al:'right'});x.restore()}
 function render(T){T_NOW=T;x=X;X.setTransform(1,0,0,1,0,0);X.globalAlpha=1;bgDraw();
   let si=S.findIndex((s,i)=>T<s.start+s.dur&&(i===S.length-1||T<S[i+1].start));if(si<0)si=S.length-1;if(T<S[0].start)si=0;
   const s=S[si],lt=T-s.start,last=si===S.length-1,end=last?TL.total-s.start:s.dur;
