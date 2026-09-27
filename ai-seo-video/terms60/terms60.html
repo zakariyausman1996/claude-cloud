@@ -126,13 +126,18 @@ function dbCylinder(cx,top,w,h,a=1){x.save();x.globalAlpha*=a;x.fillStyle='#eef2
   x.beginPath();x.ellipse(cx,top,w/2,40,0,0,7);x.fillStyle='#e0e7ff';x.fill();x.stroke();x.restore()}
 
 const SC=[
-// 0 INTRO
-t=>{const k=back(pr(t,.05,.5)),tm=wt(0,'minute'),tg=wt(0,'go');const cx=540,cy=880,R=240;
-  x.save();x.translate(cx,cy);x.scale(k,k);x.lineWidth=26;x.lineCap='round';x.strokeStyle='#e5e7eb';x.beginPath();x.arc(0,0,R,0,7);x.stroke();
-  x.strokeStyle=K.blue;x.beginPath();x.arc(0,0,R,-Math.PI/2,-Math.PI/2+Math.PI*2*eio(pr(t,.2,2.4)));x.stroke();
-  rr(-30,-R-70,60,40,10,K.blue);text('10',0,-20,230,K.ink,{al:'center',w:800});text('AI SEARCH TERMS',0,110,26,K.sub,{al:'center',w:800,ls:3});x.restore();
-  callout('UNDER 60 SECONDS',540,1420,pr(t,tm-.2,.4),K.blue);
-  const g=pr(t,tg,.4);if(g>0){x.save();x.globalAlpha*=(1-g);x.strokeStyle=K.blue;x.lineWidth=8;x.beginPath();x.arc(cx,cy,R+g*260,0,7);x.stroke();x.restore()}},
+// 0 INTRO: title types out, the 10 term chips fly in around it
+t=>{const L1='10 AI Search Terms',L2='every marketer should know',te=wt(0,'every'),tk=wt(0,'know');
+  const n1=Math.floor(L1.length*pr(t,.05,1.1)),n2=Math.floor(L2.length*pr(t,te-.05,tk+.35-te));
+  text(L1.slice(0,n1),540,975,84,K.ink,{al:'center',w:800,max:3000});text(L2.slice(0,n2),540,1075,46,K.blue,{al:'center',w:800,max:3000});
+  const typing2=t>te-.05;font(typing2?46:84,800);const cw=x.measureText((typing2?L2.slice(0,n2):L1.slice(0,n1))).width;
+  if(Math.floor(t*2.4)%2===0)rr(540+cw/2+6,typing2?1050:940,5,typing2?52:76,2,K.blue);
+  const chips=['Zero-click','Agentic search','Query fan-out','Semantic search','Embeddings','Vector database','Cosine similarity','Retrieval','RAG','Citation'];
+  const spots=[[250,690],[540,650],[830,690],[380,800],[700,800],[250,1230],[540,1270],[830,1230],[380,1370],[700,1370]];
+  const from=[[-200,500],[540,300],[1280,500],[-220,860],[1300,860],[-200,1450],[540,1650],[1280,1450],[-220,1560],[1300,1560]];
+  chips.forEach((c,i)=>{const k=pr(t,.25+i*.2,.55);if(k<=0)return;const e=back(k),[sx,sy]=spots[i],[fx,fy]=from[i];
+    const px=lerp(fx,sx,e),py=lerp(fy,sy,e)+Math.sin(t*2.2+i)*6;x.save();x.translate(px,py);x.rotate((1-eo(k))*(i%2?.5:-.5));x.translate(-px,-py);
+    chip(c,px,py,cl(k*1.4),i===0?K.blue:K.ink,i===0?K.blueS:'#fff',26);x.restore()})},
 // 1 ZERO-CLICK
 t=>{termCard(1,t);const ta=wt(1,'answer'),tn=wt(1,'never'),tw=wt(1,'website');const a=ON(t);if(a<=0)return;x.save();x.globalAlpha*=a;
   rr(140,650,800,720,30,'#fff',K.line,2,true);const q='how tall is the eiffel tower';searchBox(175,685,730,q,Math.floor(q.length*pr(t,.7,.8)));
