@@ -99,7 +99,7 @@ let T_NOW=0;
 const CITE='Adam Gent, “How Google Manages its Index” (Indexing Insight)';
 const SOURCES=[[],[],[],[],[],[],[],[],[],[]];
 const LAST=9;
-function srcAt(si,lt){return si<LAST||lt<fw(LAST,'Follow',0,99)+.2?CITE:null}
+function srcAt(si,lt){return null} // source line removed on request
 const TAGS=Array(10).fill('GOOGLE’S INDEX');
 const HEADS=['Why does Google remove pages from its index?','Google’s index is a giant database','The web is full of junk','Every page goes through a pipeline',
  'Each page is a folder of signals','Once indexed, every page keeps getting judged','Popular pages stay in fast storage','When space runs low, weaker pages get pushed out','Pages Google stops crawling get forgotten','How to keep your pages indexed'];
