@@ -185,7 +185,7 @@ t=>{head(6,t);const tn=fw(6,'nobody',0,2.3),td=fw(6,'drop',0,3.6);const shelves=
   for(let j=0;j<5;j++){const k=eo(pr(t,.4+j*.08,.3));pg(250+j*145,720+20,110,130,k,{col:K.red,fill:'#fff7ed'});if(k>.9){x.save();x.globalAlpha*=.5+.5*Math.sin(T_NOW*5+j);sparkle(250+j*145+100,730,10,K.red);x.restore()}}
   for(let j=0;j<3;j++){const d1=eio(pr(t,tn+j*.15,.6)),d2=eio(pr(t,tn+.7+j*.15,.6)),d3=eio(pr(t,td+j*.2,.6));const py=740+d1*240+d2*240+d3*260,px=560+j*145;
     pg(px,py,110,130,(.35+.65*(1-d1))*(1-d3),{col:'#94a3b8'});if(d3>.1&&d3<1)crossBadge(px+100,py,d3,16)}
-  x.save();x.globalAlpha*=eo(pr(t,td+.4,.4));text('Source: Search Engine Roundtable report on Google’s index tiers',540,1460,20,K.mute,{al:'center',w:600});x.restore()},
+  x.save();x.globalAlpha*=eo(pr(t,td+.4,.4));text('Tiers: Search Engine Roundtable report',990,640,20,K.mute,{al:'right',w:600});x.restore()},
 // 7 THE QUALITY BAR
 t=>{head(7,t);const tg=fw(7,'Gary',0,1.2),tb=fw(7,'borderline',0,6.5);
   const q=eo(pr(t,tg-.2,.45));if(q>0){x.save();x.globalAlpha*=q;rr(90,640,900,190,26,K.ink);text('“If we don’t [have space], we might deindex stuff',130,700,28,'#fff',{w:700});text('to make space for higher quality docs.”',130,742,28,'#fff',{w:700});text('— Gary Illyes, Google',130,792,22,'#94a3b8',{w:700});x.restore()}
@@ -200,7 +200,7 @@ t=>{head(8,t);const t13=fw(8,['130','130days'],0,2.6),t19=fw(8,'190',0,5.2);cons
   clockFace(540,880,160,d/190,col);text(Math.round(d)+'',540,870,72,K.ink,{al:'center',w:800});text('days since last crawl',540,930,22,K.sub,{al:'center',w:700});
   x.save();x.globalAlpha*=1-fade*.6;if(fade>.5){x.setLineDash([10,8])}pg(440,1080,200,230,1,{col:col,lw:4});x.restore();
   if(fade>.5)text('“Forgotten”',540,1340,32,K.mute,{al:'center',w:800});
-  rr(120,1420,840,10,5,'#e5e7eb');rr(120,1420,840*d/190,10,5,col);[[130,'130 days · starts dropping out',K.amber,t13],[190,'190 days · forgotten',K.mute,t19]].forEach(([v,l,c,tt])=>{const px=120+840*v/190;rr(px-2,1405,4,40,2,c);chip(l,Math.min(px,760),1470,pr(t,tt,.4),c,'#fff',20)})},
+  rr(120,1420,840,10,5,'#e5e7eb');rr(120,1420,840*d/190,10,5,col);[[130,'130 days: dropping out',K.amber,t13,540],[190,'190 days: forgotten',K.sub,t19,840]].forEach(([v,l,c,tt,cx])=>{const px=120+840*v/190;rr(px-2,1405,4,40,2,c);chip(l,cx,1480,pr(t,tt,.4),c,'#fff',22)})},
 // 9 THE FIX + end card
 t=>{const ts=fw(9,'search',0,1),tst=fw(9,'stay',0,2.2),tf=fw(9,'Follow',0,3);const out=eo(pr(t,tf+.2,.3)),gone=eo(pr(t,tf-.05,.25));
   if(gone<1){x.save();x.globalAlpha*=1-gone;head(9,t);const rise=eio(pr(t,tst,.6));

@@ -4,14 +4,14 @@ if os.path.exists("/root/.ccr/ca-bundle.crt"):
     certifi.where = lambda: "/root/.ccr/ca-bundle.crt"
 import edge_tts
 
-VOICE, RATE, GAP = "en-US-AndrewMultilingualNeural", "+30%", 0.18
+VOICE, RATE, GAP = "en-US-AndrewMultilingualNeural", "+34%", 0.12
 FF = os.environ.get("FFMPEG", "ffmpeg")
 SCENES = ["Ever noticed pages quietly disappearing from Google's index? Here's why.",
  "Google's index is basically a giant database. Only indexed pages can show up in search.", 'The web is full of junk. Around 60% is duplicate, and in 2020 Google found 40 billion spam pages every day.',
  'Every page goes through a pipeline first: rendering, spam checks, and picking one canonical version from duplicates.',
  'Each indexed page is stored like a folder of signals: content, links, canonical, and embeddings.',
  'Google keeps asking: does anyone search for this, and do people engage with it? Its Navboost system uses about 13 months of click data.',
- 'Popular pages stay in fast storage. Pages nobody wants slide down, and can drop out.', "Space is limited too. Google's Gary Illyes said when it runs low, they might deindex pages to make room for better ones. So borderline pages flicker in and out.", 'Crawling follows the same signals. One study found pages not crawled for 130 days start dropping out. After 190, Google can forget them.',
+ 'Popular pages stay in fast storage. Pages nobody wants slide down, and can drop out.', "Space is limited. Google's Gary Illyes said when it runs low, they might deindex pages to make room for better ones. Borderline pages flicker in and out.", 'Crawling follows the same signals. One study found pages not crawled for 130 days start dropping out. After 190, Google can forget them.',
  'The fix? Pages people search for, and a reason to stay. Follow for more.']
 # spoken token sequences -> caption text
 MERGES = [(["O", "A", "I", "SearchBot"], "OAI-SearchBot"), (["llms", "text"], "llms.txt")]
@@ -54,7 +54,7 @@ async def main():
         dur = r["audio"] + GAP
         tl.append({"start": round(t, 3), "dur": round(dur, 3), "words": [{**w, "t": round(w["t"] + t, 3)} for w in r["words"]]})
         t += dur
-    total = t + 0.5
+    total = t + 0.35
     open("timeline.js", "w").write("window.TL=" + json.dumps({"total": round(total, 3), "scenes": tl}) + ";\n")
     inputs, fl = [], []
     for i, s in enumerate(tl):
