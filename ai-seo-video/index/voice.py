@@ -11,7 +11,7 @@ SCENES = ["Ever noticed pages quietly disappearing from Google's index? Here's w
  'Every page goes through a pipeline first: rendering, spam checks, and picking one canonical version from duplicates.',
  'Each indexed page is stored like a folder of signals: content, links, canonical, and embeddings.',
  'Google keeps asking: does anyone search for this, and do people engage with it? Its Navboost system uses about 13 months of click data.',
- 'Popular pages stay in fast storage. Pages nobody wants slide down, and can drop out.', "Space is limited. Google's Gary Illyes said when it runs low, they might deindex pages to make room for better ones. Borderline pages flicker in and out.", 'One study found pages not crawled for 130 days start dropping out. After 190, Google can forget them.',
+ 'Popular pages stay in fast storage. Pages nobody wants slide down, and can drop out.', "Google's index storage isn't unlimited. So Google keeps cleaning it up. Gary Illyes said when space runs low, they might deindex pages to make room for better ones.", 'One study found pages not crawled for 130 days start dropping out. After 190, Google can forget them.',
  'So, to stay indexed: target real searches, give people a reason to stay, and avoid duplicate pages. Follow for more.']
 # spoken token sequences -> caption text
 MERGES = [(["O", "A", "I", "SearchBot"], "OAI-SearchBot"), (["llms", "text"], "llms.txt")]

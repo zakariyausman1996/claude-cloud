@@ -102,7 +102,7 @@ const LAST=9;
 function srcAt(si,lt){return null} // source line removed on request
 const TAGS=Array(10).fill('GOOGLE’S INDEX');
 const HEADS=['Why does Google remove pages from its index?','Google’s index is a giant database','The web is full of junk','Every page goes through a pipeline',
- 'Each page is a folder of signals','Once indexed, every page keeps getting judged','Popular pages stay in fast storage','When space runs low, weaker pages get pushed out','Pages Google stops crawling get forgotten','How to keep your pages indexed'];
+ 'Each page is a folder of signals','Once indexed, every page keeps getting judged','Popular pages stay in fast storage','Google keeps cleaning up its index to make room for better pages','Pages Google stops crawling get forgotten','How to keep your pages indexed'];
 // find a spoken word (tries several spellings), local time or fallback
 function fw(i,w,n=0,fb=0){const ws=Array.isArray(w)?w:[w];for(const q of ws){const m=S[i].words.filter(o=>o.w.toLowerCase().replace(/[^a-z0-9.'-]/g,'')===q.toLowerCase());if(m[n]||m[0])return (m[n]||m[0]).t-S[i].start}return fb}
 function head(i,t){let sz=62,lines=wrap(HEADS[i],sz,800,900);if(lines.length>2){sz=52;lines=wrap(HEADS[i],sz,800,900)}const lh=sz*1.16;lines.forEach((l,j)=>{const k=eo(pr(t,.05+j*.1,.4));text(l,90,430+j*lh+(1-k)*24,sz,K.ink,{a:k,w:800,max:3000})});return 430+lines.length*lh}
@@ -188,18 +188,23 @@ t=>{head(6,t);const tn=fw(6,'nobody',0,2.3),td=fw(6,'drop',0,3.6);const shelves=
   for(let j=0;j<3;j++){const d1=eio(pr(t,tn+j*.15,.6)),d2=eio(pr(t,tn+.7+j*.15,.6)),d3=eio(pr(t,td+j*.2,.6));const py=740+d1*240+d2*240+d3*260,px=560+j*145;
     pg(px,py,110,130,(.35+.65*(1-d1))*(1-d3),{col:'#94a3b8'});if(d3>.1&&d3<1)crossBadge(px+100,py,d3,16)}
   x.save();x.globalAlpha*=eo(pr(t,td+.4,.4));text('Tiers: Search Engine Roundtable report',990,640,20,K.mute,{al:'right',w:600});x.restore()},
-// 7 WHEN SPACE RUNS LOW, WEAKER PAGES GET PUSHED OUT
-t=>{head(7,t);const tl=fw(7,'low',0,2.5),tb=fw(7,'Borderline',0,6);
+// 7 GOOGLE KEEPS CLEANING UP ITS INDEX TO MAKE ROOM FOR BETTER PAGES
+t=>{head(7,t);const tu=fw(7,'unlimited',0,1.3),tc=fw(7,'cleaning',0,2.6),tl=fw(7,'low',0,5),td=fw(7,'deindex',0,6),tr=fw(7,'room',0,7);
   const q=eo(pr(t,.2,.45));if(q>0){x.save();x.globalAlpha*=q;x.translate(0,(1-q)*30);rr(90,620,900,170,26,K.ink);text('“If we don’t [have space], we might deindex stuff',125,675,27,'#fff',{w:700});text('to make space for higher quality docs.”',125,715,27,'#fff',{w:700});text('— Gary Illyes, Google',125,760,21,'#94a3b8',{w:700});x.restore()}
   const a=eo(pr(t,.35,.45));if(a<=0)return;x.save();x.globalAlpha*=a;rr(90,820,900,610,26,'#fff',K.line,2,true);
-  const drain=eio(pr(t,tl-.2,1)),free=lerp(.78,.12,drain),gcol=free>.4?K.green:free>.22?K.amber:K.red;
-  text('Free space',130,875,24,K.sub,{w:800});rr(270,860,300,30,15,'#e5e7eb');rr(270,860,300*free,30,15,gcol);text(Math.round(free*100)+'%',585,876,24,gcol,{w:800});
-  const wob=t>tb?Math.sin((t-tb)*3.2)*85*eo(pr(t,tb,.4)):0,barY=lerp(1350,1165,drain)+wob;
+  const drain=eio(pr(t,tl-.2,.9)),free=lerp(.78,.12,drain),gcol=free>.4?K.green:free>.22?K.amber:K.red,pulse=t>tu-.1&&t<tu+1?1+.06*Math.sin((t-tu)*12):1;
+  text('Storage',130,875,24,K.sub,{w:800});x.save();x.translate(420,875);x.scale(pulse,pulse);x.translate(-420,-875);rr(245,860,330,30,15,'#e5e7eb');rr(245,860,330*free,30,15,gcol);x.restore();text(Math.round(free*100)+'% free',590,876,24,gcol,{w:800});
+  const wob=t>tr?Math.sin((t-tr)*3.6)*70*eo(pr(t,tr,.3)):0,barY=lerp(1350,1165,drain)+wob;
+  const sw=pr(t,td-.1,.9),bx=lerp(90,1000,sw);
   const P=[[170,960],[300,1235],[430,1105],[560,1310],[690,1020],[820,1190],[900,1290],[250,1380],[620,1395],[360,990],[760,1080],[480,1210]];
-  let n=0;P.forEach(([px,py])=>{const s=cl((barY-py)/40+.5);if(s>.5)n++;pg(px-35,py-42+(1-s)*18,70,84,.3+.7*s,{col:s>.5?K.blue:'#cbd5e1',fill:s>.5?'#fff':'#f8fafc'});
-    if(s<.5&&s>.05)crossBadge(px+30,py-40,1-s,13)});
+  let n=0;P.forEach(([px,py])=>{const s=cl((barY-py)/40+.5);if(s>.5)n++;const swept=s<.5&&sw>0&&px<bx?1:0;
+    pg(px-35,py-42+(1-s)*18,70,84,(.3+.7*s)*(swept?.25:1),{col:s>.5?K.blue:'#cbd5e1',fill:s>.5?'#fff':'#f8fafc'});
+    if(s<.5&&s>.05&&!swept)crossBadge(px+30,py-40,1-s,13)});
+  if(sw>0&&sw<1){x.save();const g=x.createLinearGradient(bx-120,0,bx,0);g.addColorStop(0,'rgba(37,99,235,0)');g.addColorStop(1,'rgba(37,99,235,.28)');x.fillStyle=g;x.fillRect(Math.max(92,bx-120),905,Math.min(120,bx-92),520);
+    rr(bx-4,905,6,520,3,K.blue);for(let i=0;i<4;i++)sparkle(bx-18,960+i*130+Math.sin(t*8+i)*10,10,K.blue);x.restore()}
   x.save();x.setLineDash([16,10]);x.strokeStyle=K.red;x.lineWidth=5;x.beginPath();x.moveTo(110,barY);x.lineTo(970,barY);x.stroke();x.restore();
-  chip('Quality bar',880,barY-32,1,K.red,K.redS,22);chip('Indexed: '+n+' / 12',820,876,1,K.blue,K.blueS,24);x.restore()},
+  chip('Quality bar',880,barY-32,1,K.red,K.redS,22);chip('Indexed: '+n+' / 12',840,876,1,K.blue,K.blueS,24);
+  chip('Cleaning up the index…',540,940,pr(t,tc-.1,.35)*(1-eo(pr(t,td+1,.4))),K.blue,'#fff',24);x.restore()},
 // 8 PAGES GOOGLE STOPS CRAWLING GET FORGOTTEN
 t=>{head(8,t);const t13=fw(8,['130','130days'],0,1.8),t19=fw(8,'190',0,4);const d=t<t13?lerp(0,130,eio(pr(t,.4,t13-.4))):lerp(130,190,eio(pr(t,t13+.2,t19-t13-.2)));
   const col=d>=185?K.mute:d>=128?K.amber:K.blue,fade=eo(pr(t,t19,.5)),slip=d>130?(d-130)/60*50:0;
