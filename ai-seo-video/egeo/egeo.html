@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>What Makes AI Recommend Your Product</title>
+<html><head><meta charset="utf-8"><title>Does Rewriting a Product Description Help AI?</title>
 <style>
 @font-face{font-family:Inter;font-weight:400;src:url(fonts/inter-400.woff2)}
 @font-face{font-family:Inter;font-weight:600;src:url(fonts/inter-600.woff2)}
@@ -95,90 +95,94 @@ function checkMark(cx,cy,r,a,col=K.green){if(a<=0)return;x.save();x.translate(cx
   x.strokeStyle='#fff';x.lineWidth=r*.24;x.lineCap='round';x.beginPath();x.moveTo(-r*.4,0);x.lineTo(-r*.1,r*.32);x.lineTo(r*.42,-r*.32);x.stroke();x.restore()}
 let T_NOW=0;
 
-// ---------- E-GEO: what makes AI recommend your product ----------
+// ---------- E-GEO v2: question headings + data cards ----------
 const CITE='Bagga et al., “E-GEO: A Testbed for Generative Engine Optimization in E-Commerce,” arXiv:2511.20867 (2026)';
 const SOURCES=[[],[],[],[],[],[],[],[]];
-function srcAt(si,lt){return si<7||lt<wt(7,'Follow')-.3?CITE:null}
-const TAGS=['AI PRODUCT RANKINGS','THE TEST','WHAT HURT','WHAT HURT','WHAT HURT','BARELY MATTERED','WHAT WORKED','THE LESSON'];
-const HEADS=['Will AI recommend it?','The test','Storytelling','Hype','Cheating','Barely mattered','What worked','The lesson'];
-// ---- rank ladder (right side). pos = 1..10 (fractional while moving)
-const LX=700,LW=290,LY=630,LH=84;
-function slotY(r){return LY+(r-1)*LH}
-function toaster(px,py,s,col=K.blue){x.save();x.translate(px,py);x.scale(s,s);rr(-26,-16,52,34,9,'#fff',col,3);rr(-16,-22,10,8,3,col);rr(4,-22,10,8,3,col);rr(18,-4,8,4,2,col);x.restore()}
-function ladder(pos,a=1,o={}){if(a<=0)return;x.save();x.globalAlpha*=a;const me=Math.round(pos),sh=o.shuffle||0;
-  for(let r=1;r<=10;r++){const y=slotY(r);text('#'+r,LX-16,y+36,24,r===me?K.blue:K.mute,{al:'right',w:800});
-    if(r===me)continue;const j=sh?Math.sin(T_NOW*9+r*2)*sh*30:0;x.save();x.translate(j,0);rr(LX,y,LW,70,14,'#fff',K.line,2);rr(LX+16,y+22,40,26,7,'#e5e7eb');skel(LX+70,y+24,150-(r*23)%60,10);skel(LX+70,y+44,100,8);x.restore()}
-  const y=slotY(1)+(pos-1)*LH;const col=o.col||K.blue;x.save();x.shadowColor='rgba(37,99,235,.35)';x.shadowBlur=30;rr(LX-8,y-4,LW+16,78,16,'#fff',col,4);x.restore();
-  toaster(LX+42,y+37,1,col);text('Your toaster',LX+84,y+30,24,K.ink,{w:800});text('#'+Math.max(1,Math.min(10,Math.round(pos))),LX+84,y+56,20,col,{w:800});
-  if(o.delta){const k=back(pr(T_LOCAL,o.dt,.45));if(k>0){x.save();x.translate(LX+LW-70,y-34);x.scale(k,k);x.rotate(-.08);const c2=o.delta[0]==='+'?K.green:(o.delta==='≈ 0'?K.sub:K.red);
-    rr(-70,-30,140,60,16,c2);text(o.delta,0,2,34,'#fff',{al:'center',w:800});x.restore()}}
-  x.restore()}
-let T_LOCAL=0;
-const move=(t,t0,from,to,d=.6)=>lerp(from,to,eio(pr(t,t0,d)));
-function aiChip(n,cx,cy,a,col=K.ink,bg='#fff'){chip(n,cx,cy,a,col,bg,24)}
-function descCard(py,h,lines,a=1,o={}){if(a<=0)return;x.save();x.globalAlpha*=a;rr(90,py,530,h,26,'#fff',o.stroke||K.line,o.stroke?4:2,true);
-  toaster(140,py+48,1.1,o.stroke||K.blue);text(o.title||'Product description',185,py+50,26,K.sub,{w:800});
-  (lines||[]).forEach((l,i)=>text(l[0],120,py+110+i*44,l[2]||30,l[1]||K.ink,{w:700,max:470}));x.restore()}
+function srcAt(si,lt){return si<7||lt<wt(7,'Follow')+.2?CITE:null}
+const TAGS=['NEW STUDY','HOW IT WAS TESTED','WHAT DIDN’T WORK','WHAT DIDN’T WORK','WHAT DIDN’T WORK','WHAT DIDN’T WORK','WHAT WORKS','THE TAKEAWAY'];
+const QS=['Does rewriting a product description help AI search recommendations?','How was it tested?','Does storytelling improve AI rankings?',
+ 'Does hype or urgency improve AI rankings?','Do fake reviews or keyword stuffing work?','Do an FAQ, headings or more words help?',
+ 'What do the best-ranking descriptions have in common?','So, what should you do?'];
+const AIS=['ChatGPT','Claude','Gemini','DeepSeek','Llama'];
+function qhead(i,t,sz=60){const lines=wrap(QS[i],sz,800,900);lines.forEach((l,j)=>{const k=eo(pr(t,.05+j*.1,.4));text(l,90,420+j*sz*1.15+(1-k)*24,sz,K.ink,{a:k,w:800,max:3000})});return 420+lines.length*sz*1.15}
+const fmt=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
+// example card: original vs rewritten
+function example(py,rew,label,a,col=K.red){if(a<=0)return;x.save();x.globalAlpha*=a;
+  rr(90,py,900,78,18,'#f8fafc',K.line,2);text('Original',120,py+40,22,K.sub,{w:800});text('“Stainless steel toaster with six browning levels.”',250,py+41,26,K.ink,{w:600,max:710});
+  const h=Math.max(78,wrap(rew,26,700,710).length*34+44);rr(90,py+92,900,h,18,'#fff',col,3);text(label,120,py+92+h/2,22,col,{w:800,max:120});
+  wrap(rew,26,700,710).forEach((l,i)=>text(l,250,py+92+30+i*34,26,K.ink,{w:700,max:3000}));x.restore();return 92+h}
+// big "places moved" meter on a -5..+1 scale
+function meter(py,val,t0,t,lbl,a=1){if(a<=0)return;x.save();x.globalAlpha*=a;const X0=130,X1=950,mn=-5,mx=1,s=(X1-X0)/(mx-mn),zx=X0-mn*s;
+  text(lbl,90,py,26,K.sub,{w:800});const ay=py+70;rr(X0,ay-2,X1-X0,4,2,'#e2e8f0');
+  for(let v=mn;v<=mx;v++){rr(X0+(v-mn)*s-1,ay-10,2,20,1,v===0?K.ink:'#cbd5e1');text(v===0?'0':(v>0?'+':'−')+Math.abs(v),X0+(v-mn)*s,ay+34,20,v===0?K.ink:K.mute,{al:'center',w:700})}
+  text('← moved down',X0,ay-34,18,K.red,{w:800});text('moved up →',X1,ay-34,18,K.green,{al:'right',w:800});
+  const g=eio(pr(t,t0,.8)),w=val*s*g,col=val>=0?K.green:K.red;rr(Math.min(zx,zx+w),ay-18,Math.max(4,Math.abs(w)),36,10,col);
+  const k=back(pr(t,t0+.5,.4));if(k>0){x.save();x.translate(950,py);x.scale(k,k);text(fmt(val)+' places',0,2,40,col,{al:'right',w:800});x.restore()}x.restore()}
+// per-AI bars on a -5..+2 scale
+function aiBars(py,vals,t0,t,a=1,o={}){if(a<=0)return;x.save();x.globalAlpha*=a;const X0=300,X1=950,mn=-5,mx=2,s=(X1-X0)/(mx-mn),zx=X0-mn*s,rh=o.rh||56;
+  rr(zx-1,py-6,2,rh*5+6,1,K.ink);
+  AIS.forEach((n,i)=>{const y=py+i*rh,k=eo(pr(t,t0+i*.08,.35));x.save();x.globalAlpha*=k;text(n,90,y+rh/2-2,26,K.ink,{w:700});
+    const g=eio(pr(t,t0+.1+i*.08,.6)),v=vals[i],w=v*s*g,col=v>=0?K.green:K.red;rr(Math.min(zx,zx+w),y+10,Math.max(3,Math.abs(w)),rh-22,8,col);
+    text(fmt(v),v>=0?zx+w+12:zx+w-12,y+rh/2-2,22,col,{al:v>=0?'left':'right',w:800,a:eo(pr(t,t0+.5+i*.08,.3))});
+    if(o.flag&&o.flag[i])chip(o.flag[i],X1-40,y+rh/2-4,pr(t,o.ft+i*.1,.3),K.red,K.redS,18);x.restore()});x.restore()}
+function toasterIcon(px,py,s,col=K.blue){x.save();x.translate(px,py);x.scale(s,s);rr(-26,-16,52,34,9,'#fff',col,3);rr(-16,-22,10,8,3,col);rr(4,-22,10,8,3,col);x.restore()}
 
 const SC=[
-// 0 HOOK
-t=>{T_LOCAL=t;headline(HEADS[0],t,.05);const tr=wt(0,'rewrite'),tc=wt(0,'ChatGPT');
-  const q=eo(pr(t,.1,.4));x.save();x.globalAlpha*=q;rr(90,650,530,110,26,'#f1f5f9',K.line,2);text('r/BuyItForLife',120,685,20,K.sub,{w:800});text('“I need a toaster that lasts, any ideas?”',120,728,26,K.ink,{w:700,max:480});x.restore();
-  const d=eo(pr(t,tr-.3,.4));descCard(800,300,[['Stainless steel toaster',K.ink],['with six browning levels.',K.ink]],d);
-  if(t>tr){const p=pr(t,tr,.8);x.save();x.globalAlpha*=eo(p);x.translate(575,860);x.rotate(-.6);rr(-8,-50,16,90,6,K.amber);x.beginPath();x.moveTo(-8,40);x.lineTo(8,40);x.lineTo(0,58);x.fill();x.restore();hl(118,905,420*eio(p),48,1)}
-  aiChip('ChatGPT: recommend it?',355,1180,pr(t,tc-.2,.4),K.green,'#f0fdf4');
-  ladder(5,eo(pr(t,.2,.5)))},
-// 1 THE TEST
-t=>{T_LOCAL=t;headline(HEADS[1],t,.05);const t2=wt(1,'two'),t5=wt(1,'Five'),trw=wt(1,'rewritten'),tag=wt(1,'again');
-  const c=eo(pr(t,t2-.3,.4));if(c>0){x.save();x.globalAlpha*=c;for(let i=0;i<4;i++)rr(110+i*12,650+i*12,480,90,18,'#f8fafc',K.line,2);
-    text(Math.round(2000*eio(pr(t,t2,1))).toLocaleString('en-US'),150,745,56,K.ink,{w:800});text('real shopping questions',330,747,26,K.sub,{w:700});x.restore()}
-  ['ChatGPT','Claude','Gemini','DeepSeek','Llama'].forEach((n,i)=>aiChip(n,[165,350,535,255,455][i],[870,870,870,950,950][i],pr(t,t5-.1+i*.08,.35)));
-  const fl=pr(t,trw-.3,.6),sx=Math.abs(Math.cos(fl*Math.PI));const d=eo(pr(t,t5+.4,.4));if(d>0){x.save();x.globalAlpha*=d;x.translate(355,1150);x.scale(Math.max(.02,sx),1);x.translate(-355,-1150);
-    descCard(1030,240,fl<.5?[['Original description',K.ink]]:[['Rewritten description',K.blue]],1,{stroke:fl<.5?null:K.blue});x.restore()}
-  ladder(5,1,{shuffle:t>tag-.2&&t<tag+1.2?1:0})},
+// 0 TITLE QUESTION
+t=>{const tc=wt(0,'ChatGPT');const hy=qhead(0,t,66);
+  const b=eo(pr(t,.5,.4));x.save();x.globalAlpha*=b;rr(90,hy+40,900,100,26,'#f1f5f9',K.line,2);text('Shopper',120,hy+76,20,K.sub,{w:800});text('“I need a toaster that lasts, any ideas?”',120,hy+110,30,K.ink,{w:700});x.restore();
+  const a=eo(pr(t,tc-.2,.4));if(a>0){x.save();x.globalAlpha*=a;const y0=hy+170;rr(90,y0,900,300,26,'#fff',K.blue,3,true);sparkle(130,y0+44,16,K.blue);text('AI recommends',160,y0+45,26,K.ink,{w:800});
+    ['Toaster A','Your toaster','Toaster C'].forEach((n,i)=>{const k=eo(pr(t,tc+.2+i*.15,.3)),yy=y0+90+i*66;x.save();x.globalAlpha*=k;rr(120,yy,840,54,14,i===1?K.blueS:'#f8fafc',i===1?K.blue:K.line,2);
+      text((i+1)+'.',150,yy+28,26,K.sub,{w:800});toasterIcon(210,yy+28,.8,i===1?K.blue:K.mute);text(n,250,yy+29,26,i===1?K.blue:K.ink,{w:800});x.restore()});
+    chip('Rank ?',860,y0+45,pr(t,wt(0,'recommend'),.4),K.blue,K.blueS,24);x.restore()}},
+// 1 HOW IT WAS TESTED
+t=>{qhead(1,t);const steps=[['2,000 real shopping questions from Reddit',wt(1,'two')],['10 Amazon products for each question',wt(1,'ten')],['5 AIs rank the products',wt(1,'Five')],['One description gets rewritten',wt(1,'rewritten')],['The AIs rank again → measure the move',wt(1,'again')]];
+  steps.forEach(([s,tt],i)=>{const k=eo(pr(t,tt-.25,.35)),py=640+i*150;if(k<=0)return;x.save();x.globalAlpha*=k;x.translate((1-k)*-60,0);
+    rr(90,py,900,120,26,'#fff',i===3?K.blue:K.line,i===3?4:2,true);badge(String(i+1),150,py+60,k,K.blue);text(s,200,py+62,32,K.ink,{w:700,max:760});
+    if(i===2)AIS.forEach((n,j)=>chip(n,560+j*0,0,0));x.restore();
+    if(i<4&&t>tt+.2){x.save();x.globalAlpha*=eo(pr(t,tt+.2,.3));rr(538,py+122,4,26,2,K.mute);x.restore()}})},
 // 2 STORYTELLING
-t=>{T_LOCAL=t;headline(HEADS[2],t,.05);const ts=wt(2,'story'),tf=wt(2,'fell');
-  const s='“Every morning, Sarah stood in her sunny kitchen, waiting for the perfect slice…”';const n=Math.floor(s.length*pr(t,.3,Math.max(.6,ts-.1)));
-  descCard(650,420,[],eo(pr(t,.1,.35)),{title:'Rewritten as a story'});x.save();x.globalAlpha*=eo(pr(t,.1,.35));const lines=wrap(s.slice(0,n),32,600,500);lines.forEach((l,i)=>text(l,120,770+i*46,32,K.ink,{w:600,max:3000}));x.restore();
-  crossBadge(590,680,pr(t,tf-.2,.4),30);
-  ladder(move(t,tf-.1,5,9.4,.7),1,{delta:'−4.4',dt:tf+.3,col:t>tf?K.red:K.blue})},
-// 3 HYPE
-t=>{T_LOCAL=t;headline(HEADS[3],t,.05);const to=wt(3,'Only'),ta=wt(3,'Ad-style'),te=wt(3,'expert');
-  const cards=[['“Only a few left!”','−3.3',to,3.26],['“Grab yours today!”','−1.8',ta,1.82],['“The toaster experts trust”','−0.6',te,.64]];
-  cards.forEach(([q,v,tt],i)=>{const k=eo(pr(t,tt-.25,.35)),py=660+i*190;if(k<=0)return;x.save();x.globalAlpha*=k;x.translate((1-k)*-80,0);
-    rr(90,py,530,160,24,'#fff',K.red,3,true);text(q,120,py+65,32,K.ink,{w:800,max:470});text(v+' places',120,py+120,30,K.red,{w:800});x.restore()});
-  // toaster drops for each, then pops back up for the next one
-  let pos=5,cur=null;cards.forEach(([q,v,tt,dd],i)=>{const next=cards[i+1];const down=eio(pr(t,tt,.5)),up=next?eio(pr(t,next[2]-.4,.3)):0;const p=5+dd*down*(1-up);if(t>=tt-.1&&(!next||t<next[2]-.1)){pos=p;cur=[v,tt]}});
-  ladder(pos,1,cur?{delta:cur[0],dt:cur[1]+.35,col:K.red}:{})},
+t=>{qhead(2,t);const tf=wt(2,'fell');const a=eo(pr(t,.3,.4));
+  example(620,'“Every morning, Sarah stood in her sunny kitchen, waiting for the perfect slice…”','Story',a);
+  meter(900,-4.36,tf-.3,t,'Average places moved',eo(pr(t,tf-.6,.4)));
+  aiBars(1110,[-4.38,-4.42,-4.44,-4.23,-4.35],tf+.2,t,eo(pr(t,tf,.4)),{rh:62});
+  stamp('WORST RESULT',760,1480,pr(t,tf+1.2,.5),K.red,-.06,30)},
+// 3 HYPE / URGENCY / TONE
+t=>{qhead(3,t);const rows=[['Urgency','“Only a few left, don’t miss out!”',-3.26,wt(3,'Only')],['Ad copy','“Grab yours today before they’re gone!”',-1.82,wt(3,'Ad-style')],['Expert tone','“The toaster experts trust…”',-0.64,wt(3,'expert')]];
+  const X0=300,X1=950,s=(X1-X0)/5,zx=X1;
+  rows.forEach(([h,q,v,tt],i)=>{const k=eo(pr(t,tt-.3,.35)),py=630+i*280;if(k<=0)return;x.save();x.globalAlpha*=k;x.translate((1-k)*-60,0);
+    rr(90,py,900,250,26,'#fff',K.red,3,true);text(h,130,py+50,34,K.red,{w:800});text(q,130,py+100,28,K.ink,{w:600,max:820});
+    const g=eio(pr(t,tt,.7)),w=v*(700/5)*g;rr(130,py+170,760,4,2,'#e2e8f0');rr(890+w,py+152,-w,40,10,K.red);rr(889,py+140,2,64,1,K.ink);
+    text(fmt(v)+' places',890+w-16,py+173,30,K.red,{al:'right',w:800,a:eo(pr(t,tt+.4,.3))});x.restore()})},
 // 4 CHEATING
-t=>{T_LOCAL=t;headline(HEADS[4],t,.05);const tfk=wt(4,'fake'),tk=wt(4,'keyword'),tc=wt(4,'caught'),tl=wt(4,'lower'),tg=wt(4,'ChatGPT');
-  descCard(650,470,[],eo(pr(t,.05,.35)),{title:'Product description'});
-  const f=back(pr(t,tfk-.1,.4));if(f>0){x.save();x.translate(355,790);x.scale(f,f);x.rotate(-.04);rr(-235,-50,470,100,18,'#fffbeb',K.amber,3);text('★★★★★ “Best toaster ever!”',0,-8,30,K.amber,{al:'center',w:800});text('— Totally Real Buyer',0,28,20,K.sub,{al:'center',w:700});x.restore()}
-  const g=back(pr(t,tk,.4));if(g>0){x.save();x.translate(355,930);x.scale(g,g);x.rotate(.03);rr(-235,-45,470,90,18,'#f1f5f9',K.sub,2);text('toaster toaster best toaster',0,4,27,K.ink,{al:'center',w:500,mono:true});x.restore()}
-  const sc=pr(t,tc-.5,.6);if(sc>0&&sc<1){rr(95,650+470*sc,520,8,4,'rgba(220,38,38,.7)')}
-  stamp('CAUGHT',355,860,pr(t,tc,.5),K.red,-.1,60);
-  ['ChatGPT','Claude','Gemini'].forEach((n,i)=>aiChip(n+' ✓',[170,350,530][i],1200,pr(t,tg-.1+i*.12,.35),K.red,K.redS));
-  ladder(move(t,tl-.2,5,8,.6),1,{delta:'↓',dt:tl+.2,col:t>tl?K.red:K.blue})},
+t=>{qhead(4,t);const tf=wt(4,'fake'),tk=wt(4,'keyword'),tc=wt(4,'caught');
+  const a=eo(pr(t,tf-.3,.4));if(a>0){x.save();x.globalAlpha*=a;rr(90,630,440,110,22,'#fffbeb',K.amber,3);text('★★★★★ “Best toaster ever!”',120,672,26,K.amber,{w:800,max:390});text('Fake reviews',120,712,20,K.sub,{w:800});x.restore()}
+  const b=eo(pr(t,tk-.3,.4));if(b>0){x.save();x.globalAlpha*=b;rr(550,630,440,110,22,'#f1f5f9',K.sub,2);text('toaster toaster toaster',580,672,22,K.ink,{w:500,mono:true,max:390});text('Keyword stuffing',580,712,20,K.sub,{w:800});x.restore()}
+  const c=eo(pr(t,tc-.4,.4));if(c>0){x.save();x.globalAlpha*=c;text('Flagged as manipulation',90,800,26,K.sub,{w:800});
+    [['ChatGPT','99%','91%'],['Claude','100%','100%'],['Gemini','100%','100%']].forEach(([n,f1,f2],i)=>{const k=back(pr(t,tc+i*.15,.4)),px=90+i*305;x.save();x.globalAlpha*=cl(k);
+      rr(px,830,290,150,24,K.redS,K.red,3);text(n,px+24,875,30,K.ink,{w:800});text('Fake reviews '+f1,px+24,920,22,K.red,{w:800});text('Keywords '+f2,px+24,952,22,K.red,{w:800});x.restore()});x.restore()}
+  const tl=wt(4,'lower');const d=eo(pr(t,tl-.4,.4));if(d>0){x.save();x.globalAlpha*=d;text('Places moved (fake reviews)',90,1030,26,K.sub,{w:800});aiBars(1060,[-3.76,-2.98,-2.74,.47,1.6],tl-.3,t,1,{rh:66});x.restore()}},
 // 5 BARELY MATTERED
-t=>{T_LOCAL=t;headline(HEADS[5],t,.05);const tq=wt(5,'FAQ'),th=wt(5,'headings'),tw=wt(5,'words'),tb=wt(5,'Barely');
-  descCard(650,420,[['Stainless steel toaster',K.ink]],eo(pr(t,.05,.3)));
-  [['+ FAQ',tq,170,860],['+ Headings',th,355,960],['+170 words',tw,530,860]].forEach(([s,tt,cx,cy])=>{const k=pr(t,tt-.15,.35);if(k<=0)return;const hop=Math.sin(Math.min(1,k)*Math.PI)*-60;chip(s,cx,cy+hop*(k<1?1:0),k,K.blue,K.blueS,28)});
-  const wob=t>tq?Math.sin(t*14)*.12*(1-pr(t,tb+.6,.4)):0;ladder(5+wob,1,{delta:'≈ 0',dt:tb})},
-// 6 WHAT WORKED
-t=>{T_LOCAL=t;headline(HEADS[6],t,.05);const items=[['Short, clear summary','summary'],['Words shoppers use','shoppers'],['Real use cases',['real',1]],['Answers to buyer questions','answers'],['Accurate facts','accurate']];
-  items.forEach(([s,w],i)=>{const tt=Array.isArray(w)?wt(6,w[0],w[1]):wt(6,w);const k=eo(pr(t,tt-.2,.35)),py=650+i*112;if(k<=0)return;x.save();x.globalAlpha*=k;x.translate((1-k)*-60,0);
-    rr(90,py,530,92,22,'#fff',K.green,3,true);text(s,140+50,py+48,30,K.ink,{w:800,max:430});x.restore();checkMark(140,py+46,24,pr(t,tt,.35))});
-  const te=wt(6,'every');['ChatGPT','Claude','Gemini','DeepSeek','Llama'].forEach((n,i)=>aiChip(n+' ✓',[165,350,535,255,455][i],[1250,1250,1250,1330,1330][i],pr(t,te-.1+i*.07,.3),K.green,K.greenS));
-  ladder(move(t,te,5,4.7,.6),1,{delta:'+0.3',dt:te+.3,col:t>te?K.green:K.blue})},
-// 7 THE LESSON + end card
-t=>{T_LOCAL=t;const tt=wt(7,'tricks'),tu=wt(7,'useful'),tf=wt(7,'Follow');const out=eo(pr(t,tf-.35,.4));
-  if(out<1){x.save();x.globalAlpha*=1-out;headline(HEADS[7],t,.05);
+t=>{qhead(5,t);const rows=[['Added an FAQ',0.05,wt(5,'FAQ')],['Headings and bullets',0.02,wt(5,'headings')],['About 170 more words',-0.03,wt(5,'words')]];
+  rows.forEach(([h,v,tt],i)=>{const k=eo(pr(t,tt-.25,.35)),py=640+i*230;if(k<=0)return;x.save();x.globalAlpha*=k;x.translate((1-k)*-60,0);
+    rr(90,py,900,200,26,'#fff',K.line,2,true);text(h,130,py+55,34,K.ink,{w:800});
+    rr(150,py+130,780,4,2,'#e2e8f0');rr(539,py+100,2,64,1,K.ink);const w=v*150*eio(pr(t,tt,.6));rr(Math.min(540,540+w),py+114,Math.max(4,Math.abs(w)),36,8,v>=0?K.green:K.red);
+    text(fmt(v)+' places',600,py+134,30,K.sub,{w:800});x.restore()});
+  chip('≈ no real change',540,1380,pr(t,wt(5,'Barely')-.1,.4),K.sub,'#fff',32)},
+// 6 WHAT WORKS
+t=>{qhead(6,t);const items=[['A short, clear summary','summary'],['The words shoppers use','shoppers'],['Real ways to use it',['real',1]],['Answers to buyer questions','answers'],['Accurate facts, no made-up claims','accurate']];
+  items.forEach(([s,w],i)=>{const tt=Array.isArray(w)?wt(6,w[0],w[1]):wt(6,w),k=eo(pr(t,tt-.2,.3)),py=665+i*80;if(k<=0)return;x.save();x.globalAlpha*=k;x.translate((1-k)*-50,0);
+    rr(90,py,900,66,18,'#fff',K.green,2);text(s,160,py+35,30,K.ink,{w:700});x.restore();checkMark(125,py+33,20,pr(t,tt,.3))});
+  const te=wt(6,'every');const a=eo(pr(t,te-.4,.4));if(a>0){x.save();x.globalAlpha*=a;text('Places moved: every AI ranked it higher',90,1100,26,K.green,{w:800});aiBars(1130,[.04,.28,.14,.32,.67],te-.2,t,1,{rh:62});x.restore()}},
+// 7 TAKEAWAY + end card
+t=>{const tt=wt(7,'tricks'),tu=wt(7,'useful'),tf=wt(7,'Follow');const out=eo(pr(t,tf+.25,.3)),gone=eo(pr(t,tf,.25));
+  if(gone<1){x.save();x.globalAlpha*=1-gone;qhead(7,t);
     const k1=eo(pr(t,tt-.4,.4));x.save();x.globalAlpha*=k1;text('Skip the tricks.',540,860,84,K.sub,{al:'center',w:800});font(84,800);const w1=x.measureText('Skip the tricks.').width;rr(540-w1/2,852,w1*eio(pr(t,tt+.2,.4)),8,4,K.red);x.restore();
-    const k2=eo(pr(t,tu-.6,.4));font(84,800);const w2=x.measureText('useful.').width;x.save();x.globalAlpha*=k2;text('Be genuinely',540,1020,84,K.ink,{al:'center',w:800});hl(540-w2/2-10,1080,w2+20,84,pr(t,tu,.5));text('useful.',540,1125,84,K.green,{al:'center',w:800});x.restore();x.restore()}
-  if(out>0){x.save();x.globalAlpha*=out;const k=back(pr(t,tf-.3,.5));x.save();x.translate(540,820);x.scale(k,k);x.beginPath();x.arc(0,0,170,0,7);x.fillStyle='#fff';x.fill();x.lineWidth=8;x.strokeStyle=K.blue;x.stroke();
+    const k2=eo(pr(t,tu-.6,.4));x.save();x.globalAlpha*=k2;text('Be genuinely useful.',540,1030,80,K.green,{al:'center',w:800});x.restore();x.restore()}
+  if(out>0){x.save();x.globalAlpha*=out;const k=back(pr(t,tf+.25,.5));x.save();x.translate(540,820);x.scale(k,k);x.beginPath();x.arc(0,0,170,0,7);x.fillStyle='#fff';x.fill();x.lineWidth=8;x.strokeStyle=K.blue;x.stroke();
     x.save();x.beginPath();x.arc(0,0,164,0,7);x.clip();const im=IMG.me;if(im&&im.width)x.drawImage(im,-164,-164,328,328);x.restore();x.restore();
     text('Zakariya',540,1080,72,K.ink,{al:'center',w:800});text('SEO & GEO',540,1150,32,K.sub,{al:'center',w:700});
-    callout('FOLLOW FOR MORE SEO & GEO EXPLAINERS',540,1290,pr(t,tf,.5),K.blue);x.restore()}},
+    callout('FOLLOW FOR MORE SEO & GEO EXPLAINERS',540,1290,pr(t,tf+.4,.4),K.blue);x.restore()}},
 ];
 
 // ---------- captions ----------
@@ -212,11 +216,11 @@ function render(T){T_NOW=T;x=X;X.setTransform(1,0,0,1,0,0);X.globalAlpha=1;bgDra
   const fin=eio(lt/.4),fout=last?1:1-eio((lt-(end-.35))/.35);
   x=O;O.setTransform(1,0,0,1,0,0);O.globalAlpha=1;O.clearRect(0,0,W,H);SC[si](lt);
   x=CHc;CHc.setTransform(1,0,0,1,0,0);CHc.globalAlpha=1;CHc.clearRect(0,0,W,H);
-  if(si<7||lt<wt(7,'Follow')-.4){tagPill(TAGS[si],90,330,1,K.blue);for(let i=0;i<8;i++){const px=990-(8-i)*50+12,f=si>i?1:si<i?0:cl(lt/s.dur);rr(px,324,40,8,4,'#d1d5db');if(f>0)rr(px,324,40*f,8,4,K.blue)}}
+  if(si<7||lt<wt(7,'Follow')+.2){tagPill(TAGS[si],90,330,1,K.blue);for(let i=0;i<8;i++){const px=990-(8-i)*50+12,f=si>i?1:si<i?0:cl(lt/s.dur);rr(px,324,40,8,4,'#d1d5db');if(f>0)rr(px,324,40*f,8,4,K.blue)}}
   x=X;const dx=(1-fin)*140-(1-fout)*140;
   X.save();X.globalAlpha=Math.min(fin,fout);X.drawImage(off,0,SY,W,SH,DX+dx*SC_,DY,DW,DH);X.restore();
   X.drawImage(chrome,0,SY,W,SH,DX,DY,DW,DH);
-  captions(T);rr(40,1222,1000,2,1,'#e2e8f0');watermark(si<7||lt<wt(7,'Follow')-.4?1:0);if(true){X.save();X.globalAlpha=Math.min(fin,fout);sourceBar(si,lt);X.restore()}}
+  captions(T);rr(40,1222,1000,2,1,'#e2e8f0');watermark(si<7||lt<wt(7,'Follow')+.2?1:0);if(true){X.save();X.globalAlpha=Math.min(fin,fout);sourceBar(si,lt);X.restore()}}
 window.render=render;window.TOTAL=TL.total;
 window.ready=Promise.all(['400','600','700','800'].map(w=>document.fonts.load(`${w} 40px Inter`)).concat(document.fonts.load('500 40px Mono'),meReady));
 if(!location.hash.includes('render'))window.ready.then(()=>{const a=new Audio('build/voice.m4a');
