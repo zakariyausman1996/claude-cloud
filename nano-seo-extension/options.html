@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Nano SEO Lab Settings</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png">
+</head>
+<body class="options">
+  <div class="product-page-header">
+    <div class="product-lockup">
+      <span class="lab-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M2 16h4l3-8 4 10 3-7h6"></path>
+          <circle cx="6" cy="16" r="1.4"></circle>
+          <circle cx="9" cy="8" r="1.4"></circle>
+          <circle cx="13" cy="18" r="1.4"></circle>
+          <circle cx="16" cy="11" r="1.4"></circle>
+        </svg>
+      </span>
+      <span class="product-name">Nano SEO Lab</span>
+    </div>
+    <h1>Settings</h1>
+    <p class="muted">Choose models, analysis stages and research parameters. Advanced prompts and scoring remain editable below.</p>
+  </div>
+
+  <div id="app"></div>
+
+  <div class="settings-action-bar">
+    <div class="settings-action-buttons">
+      <button id="saveBtn">Save settings</button>
+      <button id="resetBtn" class="secondary">Restore defaults</button>
+      <button id="clearCacheBtn" class="secondary">Clear saved model results</button>
+      <button id="clearLocalDataBtn" class="secondary">Clear all local analysis data</button>
+    </div>
+    <div id="msg" class="status settings-action-status"></div>
+  </div>
+
+  <script src="defaults.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
