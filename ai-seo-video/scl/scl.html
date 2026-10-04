@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Search Central Live Notes</title>
+<html><head><meta charset="utf-8"><title>Search Central Notes</title>
 <style>
 @font-face{font-family:Inter;font-weight:400;src:url(fonts/inter-400.woff2)}
 @font-face{font-family:Inter;font-weight:600;src:url(fonts/inter-600.woff2)}
@@ -223,7 +223,7 @@ function noteScene(i,t){const n=M.scenes[i],D=M.days[n.day],first=i===dayFirst(n
   const cy=Math.min(Math.max(dy0+dl.length*44+250,1110),1200);T_SI=i;x.save();x.translate(540,cy);x.scale(1.22,1.22);x.translate(-540,-cy);ICON[n.ic](t,cy,1);x.restore()}
 
 function intro(t){const k=eo(pr(t,.1,.4));tagPill('GOOGLE · 2026',90,330,k,K.blue);
-  ['Search Central Live','Deep Dive 2026'].forEach((l,j)=>{const q=eo(pr(t,.15+j*.12,.45));text(l,90,470+j*84+(1-q)*24,76,j?K.blue:K.ink,{a:q,w:800,max:3000})});
+  ['Search Central','Deep Dive 2026'].forEach((l,j)=>{const q=eo(pr(t,.15+j*.12,.45));text(l,90,470+j*84+(1-q)*24,76,j?K.blue:K.ink,{a:q,w:800,max:3000})});
   text('The notes, day by day',90,660,34,K.sub,{a:eo(pr(t,.6,.4)),w:700});
   M.days.forEach((d,j)=>{const q=eo(pr(t,fw(0,'day',0,2)+j*.18,.45)),py=760+j*200;if(q<=0)return;x.save();x.globalAlpha*=q;x.translate((1-q)*80,0);
     rr(90,py,900,170,26,'#fff',K.line,2,true);rr(90,py,12,170,6,K.blue);text(d[0].toUpperCase(),135,py+52,24,K.blue,{w:800,ls:3});text(d[1],135,py+108,40,K.ink,{w:800});text(d[2]+' notes',950,py+52,22,K.sub,{al:'right',w:700});x.restore()})}
@@ -259,7 +259,7 @@ const SY=280,SH=1250,SC_=0.86,DW=W*SC_,DH=SH*SC_,DX=(W-DW)/2,DY=12;
 function bgDraw(){x.fillStyle=K.bg;x.fillRect(0,0,W,1350);x.strokeStyle='rgba(15,23,42,.045)';x.lineWidth=2;
   for(let i=0;i<=W;i+=52){x.beginPath();x.moveTo(i,0);x.lineTo(i,1350);x.stroke()}for(let j=0;j<=1350;j+=52){x.beginPath();x.moveTo(0,j);x.lineTo(W,j);x.stroke()}
   const g=x.createRadialGradient(540,600,80,540,600,900);g.addColorStop(0,'rgba(255,255,255,.85)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,W,1350)}
-function sourceBar(si,lt){if(si===LAST&&lt>fw(LAST,'Follow',0,99))return;x.save();text('NOTES',40,1268,17,K.blue,{w:800,ls:2});text('Serhii Omelchenko',125,1268,20,K.sub,{w:600});x.restore()}
+function sourceBar(){}
 function watermark(a){if(a<=0)return;x.save();x.globalAlpha=.9*a;const cx=1018,cy=1280;x.beginPath();x.arc(cx,cy,34,0,7);x.fillStyle='#fff';x.fill();
   x.save();x.beginPath();x.arc(cx,cy,31,0,7);x.clip();if(IMG.me.width)x.drawImage(IMG.me,cx-31,cy-31,62,62);x.restore();x.lineWidth=3;x.strokeStyle=K.blue;x.beginPath();x.arc(cx,cy,32,0,7);x.stroke();
   text('By Zakariya',cx-46,1281,24,K.ink,{w:800,al:'right'});x.restore()}

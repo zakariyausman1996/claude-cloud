@@ -7,7 +7,7 @@ import edge_tts
 VOICE, RATE, GAP = "en-US-AndrewMultilingualNeural", "+25%", 0.15
 FF = os.environ.get("FFMPEG", "ffmpeg")
 SCENES = [
-"Search Central Live Deep Dive 2026. Here are the notes, day by day.",
+"Search Central Deep Dive 2026. Here are the notes, day by day.",
 "Day 1. AI search is just search. Same bot everywhere. AI Overviews and AI Mode use Googlebot and classic Search. Gemini is not Search and may use a different crawler.",
 "Google doesn’t try to detect AI content. But ranking models are trained on human content and favour natural, human-edited writing.",
 "One in six queries is multimodal. Gen Z searches with images and expects text answers.",

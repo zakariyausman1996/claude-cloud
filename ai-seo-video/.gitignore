@@ -11,3 +11,5 @@ index/build/
 index/scenes.part.js
 scl/build/
 clone/*.wav
+scl/*.log
+scl/*.pid
