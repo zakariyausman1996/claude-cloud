@@ -13,7 +13,7 @@ SAY = [("hreflang", "aitch-ref-lang"), (" vs ", " versus "), ("L L M S dot text"
 def spoken(s):
     for a, b in SAY: s = s.replace(a, b)
     s = re.sub(r"\bAI\b", "A.I.", s); s = re.sub(r"\bLLM\b", "L.L.M.", s)
-    return s.replace("PageRank", "Page Rank").replace("Gen Z", "Gen Zee").replace("HTML", "H.T.M.L.")
+    return s.replace("PageRank", "Page Rank").replace("Gen Z", "Gen Zee").replace("HTML", "H.T.M.L.").replace("Schema", "Skeema")
 def dur(p): return float(subprocess.run([FF, "-i", p], capture_output=True, text=True).stderr.split("Duration: ")[1].split(",")[0].split(":")[-1])
 def timings(text, d):
     ws = [w for w in text.replace("(", "").replace(")", "").split() if w not in (",",)]

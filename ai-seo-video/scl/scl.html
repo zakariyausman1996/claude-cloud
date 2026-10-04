@@ -225,7 +225,7 @@ function noteScene(i,t){const n=M.scenes[i],D=M.days[n.day],first=i===dayFirst(n
 function intro(t){const k=eo(pr(t,.1,.4));tagPill('GOOGLE · 2026',90,330,k,K.blue);
   ['Search Central','Deep Dive 2026'].forEach((l,j)=>{const q=eo(pr(t,.15+j*.12,.45));text(l,90,470+j*84+(1-q)*24,76,j?K.blue:K.ink,{a:q,w:800,max:3000})});
   text('The notes, day by day',90,660,34,K.sub,{a:eo(pr(t,.6,.4)),w:700});
-  M.days.forEach((d,j)=>{const q=eo(pr(t,fw(0,'day',0,2)+j*.18,.45)),py=760+j*200;if(q<=0)return;x.save();x.globalAlpha*=q;x.translate((1-q)*80,0);
+  M.days.forEach((d,j)=>{const q=eo(pr(t,.9+j*.3,.45)),py=760+j*200;if(q<=0)return;x.save();x.globalAlpha*=q;x.translate((1-q)*80,0);
     rr(90,py,900,170,26,'#fff',K.line,2,true);rr(90,py,12,170,6,K.blue);text(d[0].toUpperCase(),135,py+52,24,K.blue,{w:800,ls:3});text(d[1],135,py+108,40,K.ink,{w:800});text(d[2]+' notes',950,py+52,22,K.sub,{al:'right',w:700});x.restore()})}
 
 function outro(t){const tf=fw(LAST,'Follow',0,1.4),gone=eo(pr(t,tf-.05,.25)),out=eo(pr(t,tf,.35));
@@ -242,7 +242,7 @@ function chromeTop(si,lt){const s=M.scenes[si];if(s.k!=='note')return;const D=M.
 // ---------- captions ----------
 const ALLW=S.flatMap((s,si)=>s.words.map(w=>({...w,si})));const CH=[];
 ALLW.forEach((w,i)=>{const p=ALLW[i-1],cur=CH[CH.length-1];
-  if(!cur||cur.w.length>=3||w.si!==p.si||w.t-(p.t+p.d)>.22)CH.push({w:[w]});else cur.w.push(w)});
+  if(!cur||cur.w.length>=3||w.si!==p.si||w.t-(p.t+p.d)>.22||p.e)CH.push({w:[w]});else cur.w.push(w)});
 CH.forEach((c,i)=>{c.t0=c.w[0].t;const l=c.w[c.w.length-1];c.t1=Math.min(CH[i+1]?CH[i+1].w[0].t:1e9,l.t+l.d+.5)});
 function captions(T){const c=CH.find(c=>T>=c.t0&&T<c.t1);if(!c)return;const words=c.w.map(w=>w.w);font(60,800);
   const full=words.join(' '),w=x.measureText(full).width+80,k=eo((T-c.t0)/.15);x.save();x.translate(540,CAPY);x.scale(.82,.82);x.scale(.94+.06*k,.94+.06*k);
