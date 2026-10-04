@@ -4,7 +4,7 @@ if os.path.exists("/root/.ccr/ca-bundle.crt"):
     certifi.where = lambda: "/root/.ccr/ca-bundle.crt"
 import edge_tts
 
-VOICE, RATE, GAP = "en-US-AndrewMultilingualNeural", "+12%", 0.35
+VOICE, RATE, GAP = "en-US-AndrewMultilingualNeural", "+25%", 0.15
 FF = os.environ.get("FFMPEG", "ffmpeg")
 SCENES = [
 "Search Central Live Deep Dive 2026. Here are the notes, day by day.",

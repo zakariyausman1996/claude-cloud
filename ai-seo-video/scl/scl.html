@@ -138,7 +138,7 @@ two(t,cy,a){[[0,'Gemini training',PURP,'token volume > quality'],[1,'Search',K.b
 dom(t,cy,a){const k=eo(pr(t,.4,.4));x.save();x.globalAlpha*=k;const px=180,py=cy-190,w=440,h=380,g=pr(t,fw(T_SI,'separated',0,4),.5);rr(px,py,w,h,20,'#fff',K.line,2,true);
   const dim=1-.6*g;x.globalAlpha*=1;[[px+16,py+16,w-32,50,'header'],[px+w-130,py+80,114,h-160,'sidebar'],[px+16,py+h-66,w-32,50,'footer']].forEach(([a1,b,c1,d,n])=>{x.save();x.globalAlpha*=dim;rr(a1,b,c1,d,10,'#f1f5f9','#cbd5e1',2);text(n,a1+c1/2,b+d/2,18,K.mute,{al:'center',w:700});x.restore()});
   rr(px+16,py+80,w-160,h-160,12,g>.5?K.blueS:'#f8fafc',g>.5?K.blue:'#cbd5e1',g>.5?4:2);for(let i=0;i<5;i++)skel(px+36,py+110+i*36,w-210-(i%2)*40,12,1,g>.5?'#93c5fd':'#e5e7eb');x.restore();
-  const tr=pr(t,1.2,.6);if(tr>0){x.save();x.globalAlpha*=eo(tr);const N=[[820,cy-150,'html'],[720,cy-30,'head'],[920,cy-30,'body'],[860,cy+90,'main'],[980,cy+90,'aside']];
+  const tr=pr(t,1.2,.6);if(tr>0){x.save();x.globalAlpha*=eo(tr);const N=[[780,cy-150,'html'],[680,cy-30,'head'],[870,cy-30,'body'],[810,cy+90,'main'],[920,cy+90,'aside']];
   [[0,1],[0,2],[2,3],[2,4]].forEach(([p,q])=>{x.strokeStyle='#cbd5e1';x.lineWidth=3;x.beginPath();x.moveTo(N[p][0],N[p][1]);x.lineTo(N[q][0],N[q][1]);x.stroke()});N.forEach(([nx,ny,n],i)=>chip(n,nx,ny,1,i===3&&g>.5?K.blue:K.ink,i===3&&g>.5?K.blueS:'#fff',20,1));x.restore()}
   chip('Main content',400,cy+240,pr(t,fw(T_SI,'separated',0,4)+.3,.4),K.blue,K.blueS,26)},
 html(t,cy,a){const h=code(['<article>','  <h1>Your answer</h1>','  <p>The fact AI cites</p>','</article>'],110,cy-170,500,eo(pr(t,.4,.4)),2,pr(t,1,.6));
