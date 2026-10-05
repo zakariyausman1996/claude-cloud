@@ -13,3 +13,5 @@ scl/build/
 clone/*.wav
 scl/*.log
 scl/*.pid
+samples/*.wav
+samples/*.mp3
