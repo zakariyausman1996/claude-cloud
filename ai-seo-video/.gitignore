@@ -15,3 +15,5 @@ scl/*.log
 scl/*.pid
 samples/*.wav
 samples/*.mp3
+gtime/build/
+gtime/*.log
