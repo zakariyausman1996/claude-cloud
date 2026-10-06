@@ -7,7 +7,7 @@ import path from 'node:path';
 const FPS = 30, dir = path.dirname(new URL(import.meta.url).pathname), ffmpeg = process.env.FFMPEG || 'ffmpeg';
 const browser = await chromium.launch({ args: ['--allow-file-access-from-files'] });
 const page = await browser.newPage();
-await page.goto('file://' + path.join(dir, 'story.html') + '#render');
+await page.goto('file://' + path.join(dir, 'chart.html') + '#render');
 await page.evaluate(() => window.ready);
 const grab = t => page.evaluate(t => { render(t); return document.getElementById('c').toDataURL('image/jpeg', 0.93); }, t);
 const stills = process.argv.slice(2).map(Number);

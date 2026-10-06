@@ -1,0 +1,273 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Google Search Timings</title>
+<style>
+@font-face{font-family:Inter;font-weight:400;src:url(fonts/inter-400.woff2)}
+@font-face{font-family:Inter;font-weight:600;src:url(fonts/inter-600.woff2)}
+@font-face{font-family:Inter;font-weight:700;src:url(fonts/inter-700.woff2)}
+@font-face{font-family:Inter;font-weight:800;src:url(fonts/inter-800.woff2)}
+@font-face{font-family:Mono;font-weight:500;src:url(fonts/mono-500.woff2)}
+html,body{margin:0;height:100%;background:#111;display:flex;align-items:center;justify-content:center}
+canvas{height:100vh;aspect-ratio:4/5}
+</style></head><body><canvas id="c" width="1080" height="1350"></canvas>
+<script src="timeline.js"></script>
+<script>
+const W=1080,H=1920,c=document.getElementById('c'),X=c.getContext('2d');
+const off=document.createElement('canvas');off.width=W;off.height=H;const O=off.getContext('2d');
+const K={bg:'#f3f4f6',ink:'#0f172a',sub:'#64748b',mute:'#94a3b8',line:'#e2e8f0',card:'#ffffff',
+  blue:'#2563eb',blueS:'#dbeafe',red:'#dc2626',redS:'#fee2e2',green:'#16a34a',greenS:'#dcfce7',amber:'#d97706'};
+const FF='Inter, "DejaVu Sans", sans-serif';
+let x=O; // current draw target
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const eo=t=>1-Math.pow(1-cl(t),3), eio=t=>{t=cl(t);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
+const back=t=>{t=cl(t);const s=1.4;return 1+(s+1)*Math.pow(t-1,3)+s*Math.pow(t-1,2)};
+const pr=(t,d,len=.5)=>cl((t-d)/len);
+
+// ---------- primitives ----------
+function font(sz,w=700,mono){x.font=`${w} ${sz}px ${mono?'Mono, "DejaVu Sans Mono", monospace':FF}`}
+function wrap(s,sz,w,maxW,mono){font(sz,w,mono);const out=[];for(const para of s.split('\n')){let l='';
+  for(const wd of para.split(' ')){const tr=l?l+' '+wd:wd;if(x.measureText(tr).width>maxW&&l){out.push(l);l=wd}else l=tr}out.push(l)}return out}
+function text(s,px,py,sz,col,o={}){const a=o.a??1;if(a<=.001)return 0;const w=o.w??700,lh=sz*(o.lh??1.18);
+  const lines=wrap(s,sz,w,o.max??900,o.mono);x.save();x.globalAlpha*=a;font(sz,w,o.mono);x.fillStyle=col;
+  x.textAlign=o.al??'left';x.textBaseline='middle';if(o.ls)x.letterSpacing=o.ls+'px';
+  lines.forEach((l,i)=>x.fillText(l,px,py+i*lh+(o.dy??0)));x.restore();return lines.length*lh}
+function rr(px,py,w,h,r,fill,stroke,lw=3,shadow){x.save();if(shadow){x.shadowColor='rgba(15,23,42,.10)';x.shadowBlur=40;x.shadowOffsetY=14}
+  x.beginPath();x.roundRect(px,py,w,h,r);if(fill){x.fillStyle=fill;x.fill()}x.shadowColor='transparent';
+  if(stroke){x.lineWidth=lw;x.strokeStyle=stroke;x.stroke()}x.restore()}
+function tagPill(s,px,py,a=1,col=K.ink,al='left',sz=26){if(a<=0)return;font(sz,700);x.save();x.letterSpacing='3px';
+  const w=x.measureText(s).width+48;x.restore();const X0=al==='center'?px-w/2:px;x.save();x.globalAlpha*=a;
+  rr(X0,py-sz,w,sz*2,sz,'#fff',col===K.ink?'#cbd5e1':col,2.5);x.restore();text(s,X0+24,py+1,sz,col,{a,ls:3})}
+function callout(s,px,py,a,col=K.blue){if(a<=0)return;const s2=.85+.15*back(a);x.save();x.translate(px,py);x.scale(s2,s2);
+  font(28,800);x.letterSpacing='3px';const w=x.measureText(s).width+60;x.letterSpacing='0px';x.globalAlpha*=cl(a*2);
+  rr(-w/2,-34,w,68,34,'#fff',col,3,true);text(s,0,1,28,col,{al:'center',w:800,ls:3});x.restore()}
+function skel(px,py,w,h,a=1,col='#e5e7eb'){x.save();x.globalAlpha*=a;rr(px,py,w,h,h/2,col);x.restore()}
+function isoLayer(cx,cy,w,d,h,a,hi){x.save();x.globalAlpha*=a;const L=[cx-w/2,cy],T=[cx,cy-d/2],R=[cx+w/2,cy],B=[cx,cy+d/2];
+  x.fillStyle=hi?'#bfdbfe':'#c7d2fe';x.beginPath();x.moveTo(...L);x.lineTo(...B);x.lineTo(B[0],B[1]+h);x.lineTo(L[0],L[1]+h);x.fill();
+  x.fillStyle=hi?'#93c5fd':'#a5b4fc';x.beginPath();x.moveTo(...B);x.lineTo(...R);x.lineTo(R[0],R[1]+h);x.lineTo(B[0],B[1]+h);x.fill();
+  x.fillStyle=hi?'#eff6ff':'#eef2ff';x.strokeStyle=hi?K.blue:'#818cf8';x.lineWidth=2;x.beginPath();x.moveTo(...L);x.lineTo(...T);x.lineTo(...R);x.lineTo(...B);x.closePath();x.fill();x.stroke();
+  x.save();x.transform(w/2/16,-d/2/16,w/2/16,d/2/16,L[0],L[1]);x.fillStyle=hi?'rgba(37,99,235,.55)':'rgba(79,70,229,.35)';
+  for(let i=1;i<16;i++)for(let j=1;j<16;j++)if((i*7+j*13)%5)x.fillRect(i-.18,j-.18,.36,.36);x.restore();x.restore()}
+function pageCard(px,py,w,h,a,o={}){if(a<=0)return;x.save();x.globalAlpha*=a;rr(px,py,w,h,18,'#fff',o.stroke??K.line,o.stroke?4:2,true);
+  skel(px+24,py+28,w*.55,16,1,o.stroke?'#93c5fd':'#cbd5e1');for(let i=0;i<3;i++)skel(px+24,py+62+i*26,w-48-(i%2)*50,11);x.restore()}
+function badge(s,cx,cy,a,col=K.blue){if(a<=0)return;x.save();x.globalAlpha*=a;x.translate(cx,cy);x.scale(back(a),back(a));
+  x.beginPath();x.arc(0,0,30,0,7);x.fillStyle=col;x.fill();text(s,0,1,28,'#fff',{al:'center',w:800});x.restore()}
+function crossBadge(cx,cy,a,r=34){if(a<=0)return;x.save();x.globalAlpha*=cl(a*2);x.translate(cx,cy);x.scale(back(a),back(a));
+  x.beginPath();x.arc(0,0,r,0,7);x.fillStyle=K.red;x.fill();x.strokeStyle='#fff';x.lineWidth=r*.2;x.lineCap='round';
+  const q=r*.38;x.beginPath();x.moveTo(-q,-q);x.lineTo(q,q);x.moveTo(q,-q);x.lineTo(-q,q);x.stroke();x.restore()}
+function sparkle(cx,cy,r,col){x.save();x.translate(cx,cy);x.fillStyle=col;x.beginPath();
+  for(let i=0;i<8;i++){const a=i*Math.PI/4,rad=i%2?r*.28:r;x.lineTo(Math.cos(a)*rad,Math.sin(a)*rad)}x.fill();x.restore()}
+function searchBar(px,py,w,q,shown,a,caret){if(a<=0)return;x.save();x.globalAlpha*=a;rr(px,py,w,120,60,'#fff',K.line,2,true);
+  x.strokeStyle=K.sub;x.lineWidth=5;x.beginPath();x.arc(px+62,py+56,16,0,7);x.stroke();x.beginPath();x.moveTo(px+74,py+68);x.lineTo(px+88,py+82);x.stroke();
+  const s=q.slice(0,shown);text(s,px+112,py+61,40,K.ink,{w:600,max:w-150});
+  if(caret){font(40,600);const cw=x.measureText(s).width;if(Math.floor(caret*2.2)%2===0)rr(px+116+cw,py+36,4,50,2,K.blue)}x.restore()}
+// headline with per-word stagger
+function headline(s,t,t0,a=1){const ws=s.split(' ');font(76,800);let px=90,py=440,out=[];
+  ws.forEach((w,i)=>{const ww=x.measureText(w+' ').width;if(px+ww>1000){px=90;py+=90}out.push([w,px,py,i]);px+=ww});
+  out.forEach(([w,px,py,i])=>{const k=eo(pr(t,t0+i*.06,.45));text(w,px,py+(1-k)*30,76,K.ink,{a:k*a,w:800,max:2000})})}
+
+// ---------- timeline helpers ----------
+const S=TL.scenes;
+function wt(i,word,n=0){const ws=S[i].words.filter(w=>w.w.toLowerCase().replace(/[^a-z0-9.'-]/g,'')===word.toLowerCase());
+  return (ws[n]||ws[0]||{t:S[i].start}).t-S[i].start}
+
+function quote(s,who,cx,cy,a,w=840){if(a<=0)return;x.save();x.globalAlpha*=cl(a*1.5);x.translate(0,(1-eo(a))*40);
+  const lines=wrap(s,40,700,w-120);const h=lines.length*48+120;rr(cx-w/2,cy-h/2,w,h,28,'#fff',K.line,2,true);
+  text('“',cx-w/2+36,cy-h/2+50,90,K.blue,{w:800});lines.forEach((l,i)=>text(l,cx-w/2+80,cy-h/2+62+i*48,40,K.ink,{w:700,max:3000}));
+  text('— '+who,cx-w/2+80,cy+h/2-38,26,K.sub,{w:600});x.restore()}
+function chip(s,cx,cy,a,col=K.ink,bg='#fff',sz=30,mono){if(a<=0)return;x.save();x.translate(cx,cy);const k=back(a);x.scale(k,k);x.globalAlpha*=cl(a*2);
+  font(sz,700,mono);const w=x.measureText(s).width+50;rr(-w/2,-sz*1.05,w,sz*2.1,sz*1.05,bg,col===K.ink?K.line:col,2.5,true);text(s,0,2,sz,col,{al:'center',w:700,mono});x.restore()}
+function phase(t,a,b,f=.35){return Math.min(eo(pr(t,a,f)),1-eo(pr(t,b-f,f)))} // fade in at a, out by b
+// ---------- extra primitives ----------
+const YEL='rgba(250,204,21,.55)';
+function hl(px,py,w,h,p){if(p<=0)return;x.save();x.fillStyle=YEL;x.beginPath();x.roundRect(px,py,w*cl(p),h,6);x.fill();x.restore()}
+function stamp(label,cx,cy,a,col=K.red,rot=-.12,sz=64){if(a<=0)return;const k=eo(a/.6),s=2.2-1.2*k;x.save();x.globalAlpha*=cl(a*3);x.translate(cx,cy);x.rotate(rot);x.scale(s,s);
+  font(sz,800);x.letterSpacing='4px';const w=x.measureText(label).width+60;x.letterSpacing='0px';rr(-w/2,-sz*.85,w,sz*1.7,14,'rgba(255,255,255,.85)',col,7);text(label,0,3,sz,col,{al:'center',w:800,ls:4,max:3000});x.restore()}
+function bot(cx,cy,name,col,a,sc=1){if(a<=0)return;x.save();x.globalAlpha*=cl(a*2);x.translate(cx,cy);const k=back(a)*sc;x.scale(k,k);
+  x.strokeStyle=col;x.lineWidth=5;x.beginPath();x.moveTo(0,-70);x.lineTo(0,-95);x.stroke();x.beginPath();x.arc(0,-100,9,0,7);x.fillStyle=col;x.fill();
+  rr(-62,-70,124,100,28,'#fff',col,5,true);const bl=(Math.floor(T_NOW*1.3+cx)%5===0)?2:14;
+  rr(-34,-38,20,bl,6,col);rr(14,-38,20,bl,6,col);rr(-22,4,44,8,4,col);
+  font(24,800);const w=x.measureText(name).width+36;rr(-w/2,50,w,46,23,col);text(name,0,74,24,'#fff',{al:'center',w:800,max:3000});x.restore()}
+function person(cx,cy,s,col){x.fillStyle=col;x.beginPath();x.arc(cx,cy-s*.32,s*.2,0,7);x.fill();x.beginPath();x.roundRect(cx-s*.3,cy-s*.06,s*.6,s*.42,s*.18);x.fill()}
+function answerCard(px,py,w,h,a,o={}){if(a<=0)return;x.save();x.globalAlpha*=a;rr(px,py,w,h,30,'#fff',K.line,2,true);sparkle(px+46,py+50,18,K.blue);
+  text(o.title??'AI answer',px+76,py+51,30,K.ink,{w:700});const n=o.lines??4;for(let i=0;i<n;i++){const g=eio(pr(o.t??9,(o.t0??0)+i*.15,.5));skel(px+36,py+100+i*38,(i===n-1?w*.45:w-72)*g,14,1,i<2?'#dbeafe':'#e5e7eb')}x.restore()}
+function srcChip(s,px,py,a,hi){if(a<=0)return;x.save();x.globalAlpha*=eo(a);font(24,700);const w=x.measureText(s).width+60;rr(px,py-(1-eo(a))*16,w,50,25,hi?K.blueS:'#f1f5f9',hi?K.blue:K.line,hi?3:2);
+  x.strokeStyle=hi?K.blue:K.sub;x.lineWidth=3;x.beginPath();x.arc(px+24,py+25,6,0,7);x.stroke();text(s,px+40,py+26,24,hi?K.blue:K.sub,{w:700,max:3000});x.restore();return w}
+function checkMark(cx,cy,r,a,col=K.green){if(a<=0)return;x.save();x.translate(cx,cy);x.scale(back(a),back(a));x.beginPath();x.arc(0,0,r,0,7);x.fillStyle=col;x.fill();
+  x.strokeStyle='#fff';x.lineWidth=r*.24;x.lineCap='round';x.beginPath();x.moveTo(-r*.4,0);x.lineTo(-r*.1,r*.32);x.lineTo(r*.42,-r*.32);x.stroke();x.restore()}
+let T_NOW=0;
+// ---------- How long Google Search changes take ----------
+const LAST=S.length-1,BLUE=K.blue,GREEN=K.green,AMB=K.amber;
+function fw(i,w,n=0,fb=0){const ws=Array.isArray(w)?w:[w];for(const q of ws){const m=S[i].words.filter(o=>o.w.toLowerCase().replace(/[^a-z0-9.'-]/g,'')===q.toLowerCase());if(m[n]||m[0])return (m[n]||m[0]).t-S[i].start}return fb}
+function clockFace(cx,cy,r,p,col){x.save();x.beginPath();x.arc(cx,cy,r,0,7);x.fillStyle='#fff';x.fill();x.lineWidth=8;x.strokeStyle='#e5e7eb';x.stroke();
+  x.strokeStyle=col;x.beginPath();x.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI*2*p);x.stroke();x.strokeStyle=K.ink;x.lineWidth=6;x.lineCap='round';
+  const a=-Math.PI/2+Math.PI*2*p*6;x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+Math.cos(a)*r*.6,cy+Math.sin(a)*r*.6);x.stroke();x.restore()}
+
+// ----- time scale: 1 minute .. 1 year (log), then "never"
+const HR=1,DAY=24,WK=168,MON=720,YR=8760,NEVER=1e9;
+const AX0=110,AX1=860,AXN=990;
+function TX(h){if(h>=NEVER)return AXN;h=Math.max(h,1/60);if(h>YR)return Math.min(AX1+20,AX1+(Math.log10(h)-Math.log10(YR))*60);
+  return AX0+(Math.log10(h)-Math.log10(1/60))/(Math.log10(YR)-Math.log10(1/60))*(AX1-AX0)}
+const TICKS=[[1/60,'min'],[HR,'hour'],[DAY,'day'],[WK,'week'],[MON,'month'],[YR,'year']];
+function axis(y0,y1,a){if(a<=0)return;x.save();x.globalAlpha*=a;
+  TICKS.forEach(([h,l])=>{const px=TX(h);x.save();x.setLineDash([4,8]);x.strokeStyle='#d5dbe3';x.lineWidth=2;x.beginPath();x.moveTo(px,y0+18);x.lineTo(px,y1);x.stroke();x.restore();text(l,px,y0,22,K.sub,{al:'center',w:700})});
+  x.save();const g=x.createLinearGradient(AX1+40,0,AXN+20,0);g.addColorStop(0,'rgba(220,38,38,0)');g.addColorStop(1,'rgba(220,38,38,.07)');x.fillStyle=g;x.fillRect(AX1+40,y0+18,AXN+30-AX1-40,y1-y0-18);x.restore();
+  text('never',AXN,y0,22,K.red,{al:'center',w:800});x.restore()}
+
+// stage icons for the intro
+function stage(kind,cx,cy,col,a,lit){if(a<=0)return;x.save();x.globalAlpha*=a;x.translate(cx,cy);const k=.85+.15*back(a);x.scale(k,k);
+  rr(-130,-120,260,240,30,lit?'#fff':'#f8fafc',lit?col:K.line,lit?5:2,true);const c=lit?col:K.mute;x.fillStyle=c;x.strokeStyle=c;x.lineWidth=6;
+  if(kind===0){rr(-40,-70,80,62,18,null,c,6);x.beginPath();x.arc(-14,-40,7,0,7);x.arc(14,-40,7,0,7);x.fill();x.beginPath();x.moveTo(0,-70);x.lineTo(0,-88);x.stroke()}
+  if(kind===1){for(let j=0;j<3;j++){x.beginPath();x.ellipse(0,-78+j*26,42,13,0,0,7);x.fillStyle=j?'#fff':c;x.fill();x.stroke()}}
+  if(kind===2){for(let j=0;j<3;j++){rr(-46,-88+j*28,92,22,6,null,c,5);x.beginPath();x.arc(28,-77+j*28,4,0,7);x.fill()}}
+  text(['Crawling','Indexing','Serving'][kind],0,60,32,lit?K.ink:K.sub,{al:'center',w:800});x.restore()}
+// ---------- one chart per section, rows build up one by one; full table at the end ----------
+const TINT={[BLUE]:'#eff6ff',[GREEN]:'#f0fdf4',[AMB]:'#fffbeb'};
+// [label, typical, slowest, lo, hi, slowestHi, scene, cue word]  (exact text from Google's chart)
+const GRP=[
+ {n:'Crawling',sub:'How fast Google finds and fetches your pages',col:BLUE,s0:2,s1:7,size:'n',gap:138,
+  note:['Crawl capacity can drop in seconds when Google backs off, e.g. if your server struggles.',6,'drop'],rows:[
+  ['Discovery (new URL)','~20 hours','Weeks to never',20,20,NEVER,2,'new'],['Refresh (known URL)','~30 days','Weeks to never',MON,MON,NEVER,3,'known'],
+  ['Sitemap processing','~24 hours','Up to 14 days, or never (quality)',24,24,NEVER,4,'Sitemaps'],['robots.txt update','~24 hours','25 hours',24,24,25,5,['robots.txt','robots']],
+  ['Crawl capacity update','4 hours to 1–2 weeks','1–3 weeks (in recovery)',4,2*WK,3*WK,6,'capacity'],['Crawl demand update','~20 hours','Weeks to months',20,20,3*MON,7,'demand']]},
+ {n:'Indexing',sub:'How fast Google processes and stores your pages',col:GREEN,s0:8,s1:17,size:'c',gap:88,rows:[
+  ['Rendering','Seconds to render, hours in the queue','Days to weeks',.002,5,3*WK,8,'Rendering'],['Meta annotations','45–90 minutes','1–4 days',.75,1.5,4*DAY,9,'Meta'],
+  ['Link annotations','Minutes to 1–3 weeks','Months',.05,3*WK,3*MON,10,'Link'],['Indexing (end to end)','~1.5 hours','Months or never (quality)',1.5,1.5,NEVER,11,'Indexing','End to end = all critical processes succeed'],
+  ['Removal','1–3 weeks','Months',WK,3*WK,3*MON,12,'Removing'],['Canonicalisation change','1–3 weeks','Months (conflicting signals)',WK,3*WK,3*MON,13,'canonical'],
+  ['Site move','1–3 months','6 months to 1 year+',MON,3*MON,1.4*YR,14,'site','Small site move: a few weeks'],['Structured data updates','Hours to 1–2 weeks','Weeks or never (quality)',2,2*WK,NEVER,15,'Structured'],
+  ['Images','Hours to days','Weeks to months',2,3*DAY,3*MON,16,'Images'],['Videos','Hours to days','Weeks to months (deep analysis)',2,3*DAY,3*MON,17,'Videos']]},
+ {n:'Serving',sub:'How fast changes show up in search results',col:AMB,s0:18,s1:24,size:'n',gap:116,
+  note:['Core updates take 2–4 weeks to roll out. Spam updates roll out in 1–2 days.',23,'roll'],rows:[
+  ['Removal in Search Console (owner)','~2 hours','24 hours',2,2,24,18,'removal'],['Snippet update','1–2 days','Several weeks to months',DAY,2*DAY,3*MON,19,'Snippets'],
+  ['Title update','1–2 days','Several weeks to months',DAY,2*DAY,3*MON,20,'Titles'],['Text result image update','1–2 weeks','Several weeks to months',WK,2*WK,3*MON,21,'Text'],
+  ['Manual action removal','1–2 weeks','4–6 weeks, or much longer for dormant sites',WK,2*WK,8*WK,22,'manual'],['Core update change','3–6 months to recover','6 months to 1 year (next core update)',3*MON,6*MON,YR,23,'core'],
+  ['Spam update change','1–2 weeks (continuous)','Months (batch refreshes)',WK,2*WK,3*MON,24,'Spam']]},
+];
+const GT=(i,w,fb=.3)=>S[i].start+fw(i,w,0,fb); // global time of a spoken word
+GRP.forEach(g=>{g.rows.forEach(r=>r.cue=GT(r[6],r[7])-.15);g.T0=S[g.s0].start;g.T1=S[g.s1].start+S[g.s1].dur;if(g.note)g.noteT=GT(g.note[1],g.note[2])-.2});
+const SZ={n:{lab:32,typ:30,tr:26,th:20,sl:64,ss:22},c:{lab:27,typ:25,tr:19,th:14,sl:45,ss:18}};
+
+// one row of the chart as a time bar (T is global time)
+function row(r,y,T,col,sz,active){const [lab,typ,slow,lo,hi,sh]=r,cue=r.cue,k=eo(pr(T,cue-.1,.4));if(k<=0)return;
+  {const top=y-sz.lab*.85,h=sz.sl+sz.lab*.85+sz.ss*.85;x.save();x.globalAlpha*=k;rr(70,top,940,h,16,'#fff',K.line,1.5);if(active>0){x.globalAlpha*=active;rr(70,top,940,h,16,TINT[col],col,2.5)}x.restore()}
+  x.save();x.globalAlpha*=k;x.translate((1-k)*-40,0);
+  text(lab,96,y,sz.lab,K.ink,{w:800,max:640});text(typ,984,y,sz.typ,col,{al:'right',w:800,max:3000});
+  const ty=y+sz.tr;rr(AX0-20,ty,AXN-AX0+40,sz.th,sz.th/2,'#e9edf2');
+  const p1=eio(pr(T,cue+.15,.6)),p2=eio(pr(T,cue+.7,.9)),x0=TX(lo),x1=TX(hi),xs=TX(sh);
+  if(p2>0&&sh>hi){const e=lerp(x1,xs,p2);x.save();const g=x.createLinearGradient(x1,0,xs,0);g.addColorStop(0,col);g.addColorStop(1,sh>=NEVER?'rgba(220,38,38,.55)':K.red);x.globalAlpha*=.35;rr(x1,ty,Math.max(0,e-x1),sz.th,sz.th/2,g);x.restore();
+    if(p2>.95){x.beginPath();x.arc(xs,ty+sz.th/2,sz.th/2,0,7);x.fillStyle=sh>=NEVER?K.red:'#f87171';x.fill()}}
+  rr(x0-sz.th/2,ty,Math.max(sz.th,(x1-x0)*p1+sz.th),sz.th,sz.th/2,col);
+  text('Slowest: '+slow,96,y+sz.sl,sz.ss,K.sub,{w:600,a:p2,max:3000});
+  if(r[8])text(r[8],984,y+sz.sl,sz.ss,col,{al:'right',w:700,a:p2,max:3000});
+  x.restore()}
+
+// a whole section chart at global time T
+function chart(g,T){const sz=SZ[g.size];
+  const hk=eo(pr(T,g.T0,.45));text(g.n,90,430+(1-hk)*24,66,K.ink,{a:hk,w:800});text(g.sub,90,500,30,K.sub,{a:eo(pr(T,g.T0+.15,.45)),w:600});
+  const y0=560,n=g.rows.length,yEnd=y0+60+(n-1)*g.gap+sz.sl+10;axis(y0,yEnd,eo(pr(T,g.T0+.25,.45)));
+  // the row currently being explained
+  let cur=-1;g.rows.forEach((r,j)=>{if(T>=r.cue-.1)cur=j});
+  g.rows.forEach((r,j)=>{const nx=g.rows[j+1],act=j===cur?(nx?1:1-eo(pr(T,g.T1-.6,.4))):0;row(r,y0+60+j*g.gap,T,g.col,sz,act)});
+  if(g.note){const nk=eo(pr(T,g.noteT,.45));if(nk>0){const L=wrap(g.note[0],24,700,840),h=L.length*32+30,ny=yEnd+18;x.save();x.globalAlpha*=nk;x.translate(0,(1-nk)*20);
+    rr(90,ny,900,h,18,'#fff',K.line,2,true);rr(90,ny,8,h,4,g.col);L.forEach((l,j)=>text(l,124,ny+31+j*32,24,K.ink,{w:700,max:3000}));x.restore()}}}
+
+// ----- the full table, built from everything shown above
+const FB={W:900,RH:36,HD:46,GAP:12};(()=>{let y=48;GRP.forEach(g=>{g.fy=y;g.fh=FB.HD+g.rows.length*FB.RH+8;y+=g.fh+FB.GAP});FB.H=y-FB.GAP})();
+const FA0=370,FA1=830,FAN=885;
+function FX(h){if(h>=NEVER)return FAN;h=Math.max(h,1/60);const L=Math.log10;if(h>YR)return Math.min(FA1+12,FA1+(L(h)-L(YR))*40);return FA0+(L(h)-L(1/60))/(L(YR)-L(1/60))*(FA1-FA0)}
+function fullTable(T,t0){t0+=.15;const fit=Math.min(1,(1490-470)/FB.H),ox=540-FB.W*fit/2,oy=470;
+  x.save();x.translate(ox,oy);x.scale(fit,fit);
+  const ak=eo(pr(T,t0+.2,.5));x.save();x.globalAlpha*=ak;TICKS.forEach(([h,l])=>text(l,FX(h),22,15,K.sub,{al:'center',w:700}));text('never',FAN,22,15,K.red,{al:'center',w:800});x.restore();
+  GRP.forEach((g,i)=>{const k=eo(pr(T,t0+(2-i)*.18,.55));if(k<=0)return;x.save();x.globalAlpha*=k;x.translate(0,(1-k)*-30);
+    rr(0,g.fy,FB.W,g.fh,16,'#fff',null,0,true);rr(0,g.fy,7,g.fh,3,g.col);text(g.n.toUpperCase(),24,g.fy+24,19,g.col,{w:800,ls:3});
+    g.rows.forEach((r,j)=>{const ry=g.fy+FB.HD+j*FB.RH+12;text(r[0],24,ry,17,K.ink,{w:700,max:3000});
+      rr(FA0-6,ry-4,FAN-FA0+12,8,4,'#eef2f6');const x0=FX(r[3]),x1=FX(r[4]),xs=FX(r[5]);
+      if(r[5]>r[4]){x.save();x.globalAlpha*=.3;rr(x1,ry-4,xs-x1,8,4,r[5]>=NEVER?K.red:g.col);x.restore()}rr(x0-4,ry-4,Math.max(8,x1-x0+8),8,4,g.col);
+      text(r[1],FB.W-16,ry+15,14,g.col,{al:'right',w:700,max:3000})});x.restore()});
+  x.restore()}
+
+// ----- intro scenes from the first version
+function intro0(t){const L=wrap('How long does Google take to crawl, index and show your page?',66,800,900);L.forEach((l,j)=>{const k=eo(pr(t,.05+j*.1,.4));text(l,90,430+j*77+(1-k)*24,66,K.ink,{a:k,w:800,max:3000})});
+  const th=fw(0,["here's","heres"],0,4),tc=fw(0,'crawl',0,1.5),ti=fw(0,'index',0,2),ts=fw(0,'show',0,2.5);
+  [[0,tc],[1,ti],[2,ts]].forEach(([k,tt],j)=>stage(k,240+j*300,880,[BLUE,GREEN,AMB][j],eo(pr(t,.3+j*.12,.4)),t>tt-.1));
+  const ck=eo(pr(t,.6,.4));if(ck>0){x.save();x.globalAlpha*=ck;clockFace(540,1150,90,(t*.15)%1,BLUE);x.restore()}
+  callout("HERE'S WHAT GOOGLE SAYS",540,1360,pr(t,th-.1,.4),BLUE)}
+function intro1(t){const L=wrap('Gary Illyes shared Google’s own numbers',58,800,900);L.forEach((l,j)=>{const k=eo(pr(t,.05+j*.1,.4));text(l,90,430+j*67+(1-k)*24,58,K.ink,{a:k,w:800,max:3000})});
+  const k=eo(pr(t,.2,.45));if(k<=0)return;x.save();x.globalAlpha*=k;x.translate(0,(1-k)*30);
+  rr(90,640,900,250,30,'#fff',K.line,2,true);x.save();x.beginPath();x.arc(210,765,72,0,7);x.fillStyle=K.blueS;x.fill();x.restore();person(210,790,150,BLUE);
+  text('Gary Illyes',320,725,44,K.ink,{w:800});text('Analyst, Google Search',320,782,28,K.sub,{w:700});
+  chip('Search Central Live Deep Dive · Europe',540,930,pr(t,fw(1,'Search',0,2)-.1,.4),BLUE,K.blueS,26);x.restore();
+  const tn=fw(1,'numbers',0,3.5);
+  [['Crawling',BLUE],['Indexing',GREEN],['Serving',AMB]].forEach(([n,c],j)=>{const q=eo(pr(t,tn-.4+j*.18,.4));if(q<=0)return;x.save();x.globalAlpha*=q;x.translate(0,(1-q)*20);
+    rr(90+j*310,1060,280,250,24,'#fff',c,4,true);text(n,230+j*310,1110,30,c,{al:'center',w:800});
+    for(let r=0;r<4;r++){skel(120+j*310,1160+r*36,130,12,1,'#e5e7eb');skel(270+j*310,1160+r*36,70,12,1,r%2?'#e5e7eb':c+'55')}x.restore()})}
+
+// ----- timeline of "slides": intro, intro, 3 charts, full table
+const LASTI=S.length-1;
+const SLIDES=[{T0:S[0].start,T1:S[0].start+S[0].dur,draw:T=>intro0(T-S[0].start),tag:'GOOGLE SEARCH',col:BLUE},
+ {T0:S[1].start,T1:S[1].start+S[1].dur,draw:T=>intro1(T-S[1].start),tag:'GOOGLE SEARCH',col:BLUE},
+ ...GRP.map(g=>({T0:g.T0,T1:g.T1,draw:T=>chart(g,T),tag:g.n.toUpperCase(),col:g.col,g})),
+ {T0:S[LASTI].start,T1:TL.total,draw:T=>fullTable(T,S[LASTI].start+.35),tag:'THE FULL TABLE',col:BLUE,last:1}];
+const tFollow=S[LASTI].start+fw(LASTI,'Follow',0,99);
+function slideAt(T){for(let i=SLIDES.length-1;i>=0;i--)if(T>=SLIDES[i].T0-.001)return i;return 0}
+function drawDesign(T){const si=slideAt(T),sl=SLIDES[si];
+  const gone=eo(pr(T,tFollow-.05,.3)),out=eo(pr(T,tFollow,.35));
+  if(gone<1){x.save();x.globalAlpha*=1-gone;
+    if(sl.last){// zoom out: the serving chart shrinks into its place in the full table
+      const z=eio(pr(T,sl.T0,.55));if(z<1){const prev=SLIDES[si-1],g=prev.g,fit=Math.min(1,(1490-470)/FB.H),tx=540,ty=470+(g.fy+g.fh/2)*fit,s=lerp(1,.42,z);
+        x.save();x.globalAlpha*=1-z;x.translate(lerp(540,tx,z),lerp(960,ty,z));x.scale(s,s);x.translate(-540,-960);prev.draw(prev.T1-.01);x.restore()}
+      text('How long Google Search changes take',90,425,52,K.ink,{a:eo(pr(T,sl.T0+.45,.5)),w:800,max:3000});
+      x.save();x.globalAlpha*=eo(pr(T,sl.T0+.45,.5));x.translate(540,980);const zs=lerp(1.12,1,eio(pr(T,sl.T0+.45,.8)));x.scale(zs,zs);x.translate(-540,-980);sl.draw(T);x.restore()}
+    else{const fin=eio(pr(T,sl.T0,.45)),fo=si<SLIDES.length-2?1-eio(pr(T,sl.T1-.35,.35)):1,dx=(1-fin)*140-(1-fo)*140;
+      x.save();x.globalAlpha*=Math.min(fin,fo);x.translate(dx,0);sl.draw(T);x.restore()}
+    // top chrome: tag + progress through the rows of the current section
+    tagPill(sl.tag,90,330,1,sl.col);
+    if(sl.g){const n=sl.g.rows.length;sl.g.rows.forEach((r,j)=>{const px=990-(n-j)*40+12,f=cl((T-r.cue)/.5);rr(px,324,32,8,4,'#d1d5db');if(f>0)rr(px,324,32*f,8,4,sl.col)})}
+    x.restore()}
+  if(out>0){x.save();x.globalAlpha*=out;const k=back(pr(T,tFollow,.45));x.save();x.translate(540,820);x.scale(k,k);x.beginPath();x.arc(0,0,170,0,7);x.fillStyle='#fff';x.fill();x.lineWidth=8;x.strokeStyle=K.blue;x.stroke();
+    x.save();x.beginPath();x.arc(0,0,164,0,7);x.clip();const im=IMG.me;if(im&&im.width)x.drawImage(im,-164,-164,328,328);x.restore();x.restore();
+    text('Zakariya',540,1080,72,K.ink,{al:'center',w:800});text('SEO & GEO',540,1150,32,K.sub,{al:'center',w:700});
+    callout('FOLLOW FOR MORE SEO & GEO EXPLAINERS',540,1290,pr(T,tFollow+.2,.35),K.blue);x.restore()}}
+// ---------- captions ----------
+const ALLW=S.flatMap((s,si)=>s.words.map(w=>({...w,si})));const CH=[];
+ALLW.forEach((w,i)=>{const p=ALLW[i-1],cur=CH[CH.length-1];
+  if(!cur||cur.w.length>=3||w.si!==p.si||w.t-(p.t+p.d)>.22)CH.push({w:[w]});else cur.w.push(w)});
+CH.forEach((c,i)=>{c.t0=c.w[0].t;const l=c.w[c.w.length-1];c.t1=Math.min(CH[i+1]?CH[i+1].w[0].t:1e9,l.t+l.d+.5)});
+function captions(T){const c=CH.find(c=>T>=c.t0&&T<c.t1);if(!c)return;const words=c.w.map(w=>w.w);font(60,800);
+  const full=words.join(' '),w=x.measureText(full).width+80,k=eo((T-c.t0)/.15);x.save();x.translate(540,CAPY);x.scale(.82,.82);x.scale(.94+.06*k,.94+.06*k);
+  rr(-w/2,-58,w,116,30,'rgba(15,23,42,.92)');let px=-w/2+40;
+  c.w.forEach(ww=>{const s=ww.w+' ',on=T>=ww.t-.03;text(ww.w,px,2,60,on?(T<ww.t+ww.d+.05?'#ffffff':'#cbd5e1'):'rgba(255,255,255,.18)',{w:800,max:3000});px+=x.measureText(s).width});x.restore()}
+
+
+// ---------- frame (LinkedIn 4:5 portrait) ----------
+const IMG={me:new Image()};const meReady=new Promise(r=>{IMG.me.onload=r;IMG.me.onerror=r;IMG.me.src='img/zakariya.jpg'});
+c.width=1080;c.height=1350;const CAPY=1130;
+const chrome=document.createElement('canvas');chrome.width=W;chrome.height=H;const CHc=chrome.getContext('2d');
+// design space is 1080x1920; crop band y 280..1530 and scale it into the top of the 1080x1350 frame
+const SY=280,SH=1250,SC_=0.86,DW=W*SC_,DH=SH*SC_,DX=(W-DW)/2,DY=12;
+function bgDraw(){x.fillStyle=K.bg;x.fillRect(0,0,W,1350);x.strokeStyle='rgba(15,23,42,.045)';x.lineWidth=2;
+  for(let i=0;i<=W;i+=52){x.beginPath();x.moveTo(i,0);x.lineTo(i,1350);x.stroke()}for(let j=0;j<=1350;j+=52){x.beginPath();x.moveTo(0,j);x.lineTo(W,j);x.stroke()}
+  const g=x.createRadialGradient(540,600,80,540,600,900);g.addColorStop(0,'rgba(255,255,255,.85)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,W,1350)}
+function sourceBar(si,lt){const s=SOURCES[si]&&srcAt(si,lt);if(!s)return;const k=eo(pr(lt,Math.max(0,...SOURCES[si].filter(([w,v])=>v===s).map(([w])=>wt(si,w)-.1).filter(v=>v<=lt)),.35));
+  x.save();x.globalAlpha*=k;text('SOURCE',40,1268,17,K.blue,{w:800,ls:2});text(s,135,1268,18,K.sub,{w:600,max:630,lh:1.25});x.restore()}
+function watermark(a){if(a<=0)return;x.save();x.globalAlpha=.9*a;const cx=1018,cy=1280;x.beginPath();x.arc(cx,cy,34,0,7);x.fillStyle='#fff';x.fill();
+  x.save();x.beginPath();x.arc(cx,cy,31,0,7);x.clip();if(IMG.me.width)x.drawImage(IMG.me,cx-31,cy-31,62,62);x.restore();x.lineWidth=3;x.strokeStyle=K.blue;x.beginPath();x.arc(cx,cy,32,0,7);x.stroke();
+  text('By Zakariya',cx-46,1281,24,K.ink,{w:800,al:'right'});x.restore()}
+function render(T){T_NOW=T;x=X;X.setTransform(1,0,0,1,0,0);X.globalAlpha=1;bgDraw();
+  let si=S.findIndex((s,i)=>T<s.start+s.dur&&(i===S.length-1||T<S[i+1].start));if(si<0)si=S.length-1;if(T<S[0].start)si=0;
+  const s=S[si],lt=T-s.start,last=si===S.length-1,end=last?TL.total-s.start:s.dur;
+  const fin=eio(lt/.4),fout=last?1:1-eio((lt-(end-.35))/.35);
+  x=O;O.setTransform(1,0,0,1,0,0);O.globalAlpha=1;O.clearRect(0,0,W,H);SC[si](lt);
+  x=CHc;CHc.setTransform(1,0,0,1,0,0);CHc.globalAlpha=1;CHc.clearRect(0,0,W,H);
+  if(si<LAST||lt<fw(LAST,'Follow',0,99)+.2){tagPill(TAGS[si],90,330,1,K.blue);for(let i=0;i<10;i++){const px=990-(10-i)*42+10,f=si>i?1:si<i?0:cl(lt/s.dur);rr(px,324,34,8,4,'#d1d5db');if(f>0)rr(px,324,34*f,8,4,K.blue)}}
+  x=X;const dx=(1-fin)*140-(1-fout)*140;
+  X.save();X.globalAlpha=Math.min(fin,fout);X.drawImage(off,0,SY,W,SH,DX+dx*SC_,DY,DW,DH);X.restore();
+  X.drawImage(chrome,0,SY,W,SH,DX,DY,DW,DH);
+  captions(T);rr(40,1222,1000,2,1,'#e2e8f0');watermark(si<LAST||lt<fw(LAST,'Follow',0,99)+.2?1:0);if(true){X.save();X.globalAlpha=Math.min(fin,fout);sourceBar(si,lt);X.restore()}}
+window.render=render;window.TOTAL=TL.total;
+window.ready=Promise.all(['400','600','700','800'].map(w=>document.fonts.load(`${w} 40px Inter`)).concat(document.fonts.load('500 40px Mono'),meReady));
+if(!location.hash.includes('render'))window.ready.then(()=>{const a=new Audio('build/voice.m4a');
+  document.body.onclick=()=>{a.currentTime=0;a.play()};(function loop(){render(a.paused?((performance.now()/1000)%TL.total):a.currentTime);requestAnimationFrame(loop)})()});
+function render(T){T_NOW=T;x=X;X.setTransform(1,0,0,1,0,0);X.globalAlpha=1;bgDraw();
+  x=O;O.setTransform(1,0,0,1,0,0);O.globalAlpha=1;O.clearRect(0,0,W,H);drawDesign(T);
+  x=X;X.drawImage(off,0,SY,W,SH,DX,DY,DW,DH);captions(T);rr(40,1222,1000,2,1,'#e2e8f0');const e=T>tFollow;watermark(e?0:1);
+  if(!e){text('SOURCE',40,1268,17,K.blue,{w:800,ls:2});text('Gary Illyes, Google',135,1268,20,K.sub,{w:600})}}
+</script></body></html>
