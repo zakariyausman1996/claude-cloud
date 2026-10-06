@@ -4,21 +4,9 @@ if os.path.exists("/root/.ccr/ca-bundle.crt"):
     certifi.where = lambda: "/root/.ccr/ca-bundle.crt"
 import edge_tts
 
-VOICE, RATE, GAP = "en-US-BrianNeural", "+6%", 0.4
+VOICE, RATE, GAP = "en-US-BrianNeural", "+6%", 0.3
 FF = os.environ.get("FFMPEG", "ffmpeg")
-SCENES = [
-"How long does Google take to crawl, index and show your page? Here's what Google says.",
-"Gary Illyes from Google shared the real numbers at Search Central Live in Europe.",
-"Crawling first. Google usually discovers a new URL in about 20 hours and refreshes a known one in about 30 days. At the slow end, both can take weeks, or never happen.",
-"Sitemaps get processed in about a day, but low-quality ones can take up to 14 days, or never. A robots dot text change gets picked up in about 24 hours.",
-"Crawl capacity takes 4 hours to 2 weeks to update, and crawl demand about 20 hours. But capacity can drop in seconds when your server struggles.",
-"Indexing a page end to end takes about an hour and a half. Rendering takes seconds, but the queue can take hours. If quality is low, indexing can take months, or never happen.",
-"Meta annotations take 45 to 90 minutes. Link annotations take minutes to 3 weeks. A canonical change takes 1 to 3 weeks, or months if your signals conflict.",
-"Removing a page takes 1 to 3 weeks. A site move takes 1 to 3 months, and can stretch past a year. A small site can move in a few weeks.",
-"Structured data updates take hours to 2 weeks. Images and videos take hours to days. Videos can take months when Google analyses them in depth.",
-"Then serving. A removal in Search Console takes about 2 hours. New titles and snippets show up in 1 to 2 days. Lifting a manual action takes 1 to 2 weeks.",
-"Recovering from a core update takes 3 to 6 months, sometimes until the next one. Core updates take 2 to 4 weeks to roll out, and spam updates 1 to 2 days. So if a change hasn't shown up yet, check the timeline before you worry. Follow for more."
-]
+SCENES = ["How long does Google take to crawl, index and show your page? Here's what Google says.", 'Gary Illyes from Google shared this chart at Search Central Live in Europe. It covers three stages: crawling, indexing and serving.', "Let's zoom into crawling.", 'A new URL is usually discovered in about 20 hours. At worst, it takes weeks, or never happens.', 'A known URL gets refreshed in about 30 days. The slowest is weeks, or never.', 'Sitemaps are processed in about 24 hours, but low-quality ones can take up to 14 days, or never.', 'A robots dot text update gets picked up in about 24 hours, 25 at most.', 'Crawl capacity updates in 4 hours to 2 weeks, and can drop in seconds when your server struggles.', 'Crawl demand updates in about 20 hours. The slowest takes weeks to months.', "That's crawling. Next, indexing.", 'Rendering takes seconds, but the queue can take hours. Worst case, days to weeks.', 'Meta annotations take 45 to 90 minutes.', 'Link annotations take minutes to 3 weeks, sometimes months.', 'Indexing a page end to end takes about an hour and a half. With quality issues, it takes months, or never happens.', 'Removing a page takes 1 to 3 weeks.', 'A canonical change takes 1 to 3 weeks, or months if your signals conflict.', 'A site move takes 1 to 3 months. A small site can move in a few weeks.', 'Structured data updates take hours to 2 weeks.', 'Images take hours to days.', 'Videos take hours to days, or months when Google analyses them in depth.', "That's indexing. Last, serving.", 'A removal in Search Console takes about 2 hours.', 'Snippets update in 1 to 2 days.', 'Titles also update in 1 to 2 days.', 'Text result images take 1 to 2 weeks.', 'Lifting a manual action takes 1 to 2 weeks, or much longer for dormant sites.', 'Recovering from a core update takes 3 to 6 months. Core updates roll out over 2 to 4 weeks.', 'Spam update changes show up in 1 to 2 weeks. Spam updates roll out in 1 to 2 days.', "That's the full picture. So if a change hasn't shown up yet, check the timeline before you worry. Follow for more."]
 # spoken token sequences -> caption text
 MERGES = [(["robots", "dot", "text"], "robots.txt"), (["O", "A", "I", "SearchBot"], "OAI-SearchBot"), (["llms", "text"], "llms.txt")]
 
