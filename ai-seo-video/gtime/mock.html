@@ -1,0 +1,50 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Timings Mockups</title>
+<style>
+@font-face{font-family:Inter;font-weight:400;src:url(fonts/inter-400.woff2)}
+@font-face{font-family:Inter;font-weight:600;src:url(fonts/inter-600.woff2)}
+@font-face{font-family:Inter;font-weight:700;src:url(fonts/inter-700.woff2)}
+@font-face{font-family:Inter;font-weight:800;src:url(fonts/inter-800.woff2)}
+html,body{margin:0;background:#111}
+</style></head><body><canvas id="c" width="1080" height="1350"></canvas>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d'),W=1080;
+const K={bg:'#f5f6f8',ink:'#0f172a',sub:'#64748b',mute:'#cbd5e1',line:'#e5e7eb',blue:'#2563eb',green:'#16a34a',amber:'#d97706',red:'#dc2626'};
+const FF='Inter, sans-serif';
+function font(sz,w=700){x.font=`${w} ${sz}px ${FF}`}
+function text(s,px,py,sz,col,o={}){x.save();x.globalAlpha*=o.a??1;font(sz,o.w??700);x.fillStyle=col;x.textAlign=o.al??'left';x.textBaseline='middle';if(o.ls)x.letterSpacing=o.ls+'px';x.fillText(s,px,py);x.restore()}
+function rr(px,py,w,h,r,fill,stroke,lw=2,shadow){x.save();if(shadow){x.shadowColor='rgba(15,23,42,.08)';x.shadowBlur=30;x.shadowOffsetY=10}x.beginPath();x.roundRect(px,py,w,h,r);if(fill){x.fillStyle=fill;x.fill()}x.shadowColor='transparent';if(stroke){x.lineWidth=lw;x.strokeStyle=stroke;x.stroke()}x.restore()}
+function pill(s,px,py,col,sz=22){font(sz,800);x.save();x.letterSpacing='3px';const w=x.measureText(s).width+44;x.restore();rr(px,py-sz,w,sz*2,sz,'#fff',col,2.5);text(s,px+22,py+1,sz,col,{w:800,ls:3})}
+const me=new Image();me.src='img/zakariya.jpg';
+function chrome(){rr(40,1222,1000,2,1,K.line);text('SOURCE',40,1268,17,K.blue,{w:800,ls:2});text('Gary Illyes, Google',135,1268,20,K.sub,{w:600});
+  const cx=1018,cy=1280;x.beginPath();x.arc(cx,cy,34,0,7);x.fillStyle='#fff';x.fill();x.save();x.beginPath();x.arc(cx,cy,31,0,7);x.clip();x.drawImage(me,cx-31,cy-31,62,62);x.restore();
+  x.lineWidth=3;x.strokeStyle=K.blue;x.beginPath();x.arc(cx,cy,32,0,7);x.stroke();text('By Zakariya',cx-46,1281,24,K.ink,{w:800,al:'right'})}
+function caption(words){font(50,800);const s=words.join(' '),w=x.measureText(s).width+70;rr(540-w/2,1130-50,w,100,26,'rgba(15,23,42,.92)');text(s,540,1132,50,'#fff',{al:'center',w:800})}
+function bg(){x.fillStyle=K.bg;x.fillRect(0,0,W,1350)}
+const SEC=[
+ {n:'CRAWLING',col:K.blue,tint:'#eff6ff',rows:[['Discovery (new URL)','~20 hours'],['Refresh (known URL)','~30 days'],['Sitemap processing','~24 hours'],['robots.txt update','~24 hours'],['Crawl capacity update','4 hours to 1–2 weeks'],['Crawl demand update','~20 hours']]},
+ {n:'INDEXING',col:K.green,tint:'#f0fdf4',rows:[['Rendering','Seconds, hours in queue'],['Meta annotations','45–90 minutes'],['Link annotations','Minutes to 1–3 weeks'],['Indexing (end to end)','~1.5 hours'],['Removal','1–3 weeks'],['Canonicalisation change','1–3 weeks'],['Site move','1–3 months'],['Structured data updates','Hours to 1–2 weeks'],['Images','Hours to days'],['Videos','Hours to days']]},
+ {n:'SERVING',col:K.amber,tint:'#fffbeb',rows:[['Removal in Search Console','~2 hours'],['Snippet update','1–2 days'],['Title update','1–2 days'],['Text result image update','1–2 weeks'],['Manual action removal','1–2 weeks'],['Core update change','3–6 months to recover'],['Spam update change','1–2 weeks']]},
+];
+// 1) full chart: clean overview, names + typical times only
+function m1(){bg();text('How long Google Search',60,70,46,K.ink,{w:800});text('changes take',60,124,46,K.ink,{w:800});text('Typical times',1020,124,22,K.sub,{al:'right',w:700});
+  let y=176;const RH=29;SEC.forEach(s=>{const h=52+s.rows.length*RH+14;rr(60,y,960,h,20,'#fff',null,0,true);rr(60,y,8,h,4,s.col);
+    text(s.n,92,y+30,22,s.col,{w:800,ls:3});s.rows.forEach((r,j)=>{const ry=y+66+j*RH;text(r[0],92,ry,21,K.ink,{w:600});text(r[1],990,ry,21,K.ink,{al:'right',w:700})});y+=h+16});
+  caption(['Here’s','the','full','chart']);chrome()}
+// 2) zoomed section: one card, big rows, current row lit, rest dimmed
+function m2(){bg();const s=SEC[0];pill('CRAWLING',60,64,s.col);text('6 processes',1020,64,22,K.sub,{al:'right',w:700});
+  rr(60,120,960,900,28,'#fff',null,0,true);const RH=140;s.rows.forEach((r,j)=>{const ry=150+j*RH,on=j===1;
+    if(on)rr(80,ry-8,920,RH-16,20,s.tint,s.col,3);text(r[0],116,ry+40,38,on?K.ink:'#94a3b8',{w:800});text(r[1],116,ry+88,32,on?s.col:'#b6c0cc',{w:700})});
+  caption(['Let’s','zoom','into','crawling']);chrome()}
+// 3) single row: one idea, big number, simple 4-step scale
+function m3(){bg();const col=K.blue;pill('CRAWLING  ·  2 / 6',60,64,col);
+  text('Refresh (known URL)',60,250,56,K.ink,{w:800});text('Google re-crawls a page it already knows in',60,322,28,K.sub,{w:600});
+  text('~30 days',60,480,150,col,{w:800});
+  const steps=['Hours','Days','Weeks','Months'],y=700,x0=110,dx=286;rr(x0,y-3,dx*3,6,3,'#e2e8f0');rr(x0,y-3,dx*3,6,3,col);
+  steps.forEach((s,i)=>{const px=x0+dx*i,on=i===3;x.beginPath();x.arc(px,y,on?26:12,0,7);x.fillStyle=on?col:'#fff';x.fill();x.lineWidth=4;x.strokeStyle=col;x.stroke();text(s,px,y+62,28,on?col:K.sub,{al:'center',w:on?800:600})});
+  rr(60,850,960,110,24,'#fff',null,0,true);text('Slowest',100,905,26,K.sub,{w:700});text('Weeks to',300,905,34,K.ink,{w:800});font(34,800);const w=x.measureText('Weeks to ').width;
+  rr(300+w,880,140,52,26,'#fef2f2',K.red,2.5);text('never',300+w+70,906,30,K.red,{al:'center',w:800});
+  caption(['refreshed','in','about','30','days']);chrome()}
+window.ready=Promise.all([document.fonts.load('800 40px Inter'),document.fonts.load('600 40px Inter'),new Promise(r=>{me.onload=r;me.onerror=r})]);
+window.draw=n=>[m1,m2,m3][n-1]();
+</script></body></html>
