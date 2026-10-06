@@ -1,0 +1,157 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Google Search Timings</title>
+<style>
+@font-face{font-family:Inter;font-weight:400;src:url(fonts/inter-400.woff2)}
+@font-face{font-family:Inter;font-weight:600;src:url(fonts/inter-600.woff2)}
+@font-face{font-family:Inter;font-weight:700;src:url(fonts/inter-700.woff2)}
+@font-face{font-family:Inter;font-weight:800;src:url(fonts/inter-800.woff2)}
+html,body{margin:0;height:100%;background:#111;display:flex;align-items:center;justify-content:center}
+canvas{height:100vh;aspect-ratio:4/5}
+</style></head><body><canvas id="c" width="1080" height="1350"></canvas>
+<script src="timeline.js"></script>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d'),W=1080,S=TL.scenes;
+const K={bg:'#f5f6f8',ink:'#0f172a',sub:'#64748b',grey:'#a3adbb',grey2:'#c3cad4',line:'#e5e7eb',blue:'#2563eb',green:'#16a34a',amber:'#d97706',red:'#dc2626'};
+const FF='Inter, "DejaVu Sans", sans-serif';
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),lerp=(a,b,t)=>a+(b-a)*t;
+const eo=t=>1-Math.pow(1-cl(t),3),eio=t=>{t=cl(t);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
+const back=t=>{t=cl(t);const s=1.5;return 1+(s+1)*Math.pow(t-1,3)+s*Math.pow(t-1,2)};
+const pr=(t,d,len=.5)=>cl((t-d)/len);
+function font(sz,w=700){x.font=`${w} ${sz}px ${FF}`}
+function wrap(s,sz,w,maxW){font(sz,w);const out=[];let l='';for(const wd of s.split(' ')){const tr=l?l+' '+wd:wd;if(x.measureText(tr).width>maxW&&l){out.push(l);l=wd}else l=tr}out.push(l);return out}
+function text(s,px,py,sz,col,o={}){const a=o.a??1;if(a<=.001)return;x.save();x.globalAlpha*=a;font(sz,o.w??700);x.fillStyle=col;x.textAlign=o.al??'left';x.textBaseline='middle';if(o.ls)x.letterSpacing=o.ls+'px';x.fillText(s,px,py);x.restore()}
+function rr(px,py,w,h,r,fill,stroke,lw=2,shadow){x.save();if(shadow){x.shadowColor='rgba(15,23,42,.08)';x.shadowBlur=34;x.shadowOffsetY=12}x.beginPath();x.roundRect(px,py,w,h,r);if(fill){x.fillStyle=fill;x.fill()}x.shadowColor='transparent';if(stroke){x.lineWidth=lw;x.strokeStyle=stroke;x.stroke()}x.restore()}
+function pill(s,px,py,col,sz=22,a=1){if(a<=0)return;font(sz,800);x.save();x.letterSpacing='3px';const w=x.measureText(s).width+44;x.restore();x.save();x.globalAlpha*=a;rr(px,py-sz,w,sz*2,sz,'#fff',col,2.5);text(s,px+22,py+1,sz,col,{w:800,ls:3});x.restore()}
+function check(cx,cy,r,a,col){if(a<=0)return;x.save();x.translate(cx,cy);x.scale(back(a),back(a));x.beginPath();x.arc(0,0,r,0,7);x.fillStyle=col;x.fill();x.strokeStyle='#fff';x.lineWidth=r*.24;x.lineCap='round';x.beginPath();x.moveTo(-r*.4,0);x.lineTo(-r*.1,r*.32);x.lineTo(r*.42,-r*.32);x.stroke();x.restore()}
+function fw(i,w,n=0,fb=0){const ws=Array.isArray(w)?w:[w];for(const q of ws){const m=S[i].words.filter(o=>o.w.toLowerCase().replace(/[^a-z0-9.'-]/g,'')===q.toLowerCase());if(m[n]||m[0])return (m[n]||m[0]).t-S[i].start}return fb}
+
+// ---------------- data (exact text from Google's chart) ----------------
+const SEC=[
+ {n:'Crawling',col:K.blue,tint:'#eff6ff',rows:[['Discovery (new URL)','~20 hours'],['Refresh (known URL)','~30 days'],['Sitemap processing','~24 hours'],['robots.txt update','~24 hours'],['Crawl capacity update','4 hours to 1–2 weeks'],['Crawl demand update','~20 hours']]},
+ {n:'Indexing',col:K.green,tint:'#f0fdf4',rows:[['Rendering','Seconds to render, hours in the queue'],['Meta annotations','45–90 minutes'],['Link annotations','Minutes to 1–3 weeks'],['Indexing (end to end)','~1.5 hours'],['Removal','1–3 weeks'],['Canonicalisation change','1–3 weeks'],['Site move','1–3 months'],['Structured data updates','Hours to 1–2 weeks'],['Images','Hours to days'],['Videos','Hours to days']]},
+ {n:'Serving',col:K.amber,tint:'#fffbeb',rows:[['Removal in Search Console (owner)','~2 hours'],['Snippet update','1–2 days'],['Title update','1–2 days'],['Text result image update','1–2 weeks'],['Manual action removal','1–2 weeks'],['Core update change','3–6 months to recover'],['Spam update change','1–2 weeks (continuous)']]},
+];
+const HERO={
+ '0-0':{sub:'A brand-new page usually gets found in',val:'~20 hours',st:[0,0],slow:'Weeks to never',slowCue:'worst'},
+ '0-1':{sub:'A page Google already knows gets re-crawled about every',val:'~30 days',st:[3,3],slow:'Weeks to never',slowCue:'slowest'},
+ '0-4':{sub:'Google adjusts how hard it crawls your server in',val:'4 hours to 1–2 weeks',st:[0,2],slow:'1–3 weeks (in recovery)',slowCue:'adjusts',slowAt:1.6,note:'It can drop in seconds when Google backs off, e.g. if your server struggles.',noteCue:'drop'},
+ '1-3':{sub:'From crawl to index, when every critical step succeeds',val:'~1.5 hours',st:[0,0],slow:'Months or never (quality)',slowCue:'quality'},
+ '1-6':{sub:'Moving pages to a new domain or new URLs',val:'1–3 months',st:[3,3],slow:'6 months to 1 year+',slowCue:'stretch',note:'A small site move can be done in a few weeks.',noteCue:'small'},
+ '2-5':{sub:'Recovering after a core update hits your site',val:'3–6 months',st:[3,3],slow:'6 months to 1 year (next core update)',slowCue:'until',note:'Core updates take 2–4 weeks to roll out.',noteCue:'roll'},
+};
+// ---------------- the story, one entry per voice line ----------------
+const SCN=[
+ {k:'full',build:1},{k:'full',pulse:1},
+ {k:'sec',s:0,cues:[[2,'Sitemaps'],[3,'robots.txt'],[5,'demand']]},
+ {k:'row',s:0,r:0},{k:'row',s:0,r:1},{k:'row',s:0,r:4},
+ {k:'full',done:1,next:1},
+ {k:'sec',s:1,cues:[[0,'Rendering'],[1,'Meta'],[2,'Link'],[7,'structured'],[4,'Removals'],[5,'canonical'],[8,'images'],[9,'videos']]},
+ {k:'row',s:1,r:3},{k:'row',s:1,r:6},
+ {k:'full',done:2,next:2},
+ {k:'sec',s:2,cues:[[0,'removal'],[2,'Titles'],[1,'snippets'],[3,'Text'],[4,'manual'],[6,'spam']]},
+ {k:'row',s:2,r:5},
+ {k:'full',done:3,end:1},
+];
+SCN.forEach((s,i)=>{s.i=i;if(s.cues)s.cueT=s.cues.map(([r,w])=>[r,fw(i,w,0,1)])});
+
+// ---------------- full chart ----------------
+const FULL=(()=>{let y=128;const RH=28,HD=50;return SEC.map(s=>{const h=HD+s.rows.length*RH+14,o={y,h,RH,HD};y+=h+14;return o})})();
+const fullPivot=i=>[540,FULL[i].y+FULL[i].h/2];
+function drawFull(sc,lt){const T0=S[sc.i].start;
+  text('How long Google Search changes take',60,74,44,K.ink,{w:800,a:sc.build?eo(pr(lt,.1,.5)):1});
+  SEC.forEach((s,i)=>{const L=FULL[i],k=sc.build?eo(pr(lt,.5+i*.5,.5)):1;if(k<=0)return;
+    const done=sc.done>i,next=sc.next===i;x.save();x.globalAlpha*=k*(done&&!sc.end?.55:1);x.translate(0,(1-k)*30);
+    let pulse=0;if(sc.pulse){const tw=fw(sc.i,s.n.toLowerCase(),0,99);pulse=Math.max(0,Math.sin(Math.PI*cl((lt-tw+.1)/1.1)))}
+    if(next)pulse=Math.max(pulse,.6+.4*Math.sin(lt*5));
+    rr(60,L.y,960,L.h,20,'#fff',pulse>0?s.col:null,3*pulse,true);rr(60,L.y,8,L.h,4,s.col);
+    text(s.n.toUpperCase(),92,L.y+30,22,s.col,{w:800,ls:3});if(done){font(22,800);x.save();x.letterSpacing='3px';const tw=x.measureText(s.n.toUpperCase()).width;x.restore();check(92+tw+26,L.y+30,13,1,s.col)}
+    if(i===0)text('Typical times',990,L.y+30,18,K.sub,{al:'right',w:700});
+    s.rows.forEach((r,j)=>{const ry=L.y+L.HD+16+j*L.RH,rk=sc.build?eo(pr(lt,.7+i*.5+j*.05,.35)):1;text(r[0],92,ry,21,K.ink,{w:600,a:rk});text(r[1],990,ry,21,K.ink,{al:'right',w:700,a:rk})});
+    x.restore()})}
+
+// ---------------- zoomed section ----------------
+function secGeom(i){const n=SEC[i].rows.length,RH=Math.min(140,900/n);return {RH,y0:118,h:n*RH+36}}
+const secPivot=(i,r)=>{const g=secGeom(i);return [540,g.y0+18+r*g.RH+g.RH/2]};
+function drawSec(sc,lt,target=-1){const s=SEC[sc.s],g=secGeom(sc.s);pill(s.n.toUpperCase(),60,64,s.col);text('Stage '+(sc.s+1)+' of 3',1020,64,22,K.sub,{al:'right',w:700});
+  rr(60,g.y0,960,g.h,28,'#fff',null,0,true);
+  const lit=new Set(sc.cueT.filter(([r,t])=>lt>=t-.1).map(([r])=>r));const lastT=Math.max(-1,...sc.cueT.filter(([r,t])=>lt>=t-.1).map(([r,t])=>t));
+  const cur=new Set(sc.cueT.filter(([r,t])=>lastT>=0&&Math.abs(t-lastT)<.05).map(([r])=>r));if(target>=0){cur.clear();cur.add(target);lit.add(target)}
+  const big=g.RH>=120,n1=big?36:30,n2=big?30:25;
+  s.rows.forEach((r,j)=>{const ry=g.y0+18+j*g.RH,on=lit.has(j),hi=cur.has(j);
+    if(hi){const k=target>=0?1:eo(pr(lt,(sc.cueT.find(c=>c[0]===j)||[0,0])[1]-.1,.25));x.save();x.globalAlpha*=k;rr(76,ry+4,928,g.RH-8,18,s.tint,s.col,3);x.restore()}
+    text(r[0],110,ry+g.RH*.37,n1,on?K.ink:K.grey,{w:800});text(r[1],110,ry+g.RH*.71,n2,on?s.col:K.grey2,{w:700});
+    if(on&&!hi)check(970,ry+g.RH/2,15,1,s.col)})}
+
+// ---------------- single row (one idea per screen) ----------------
+const STEPS=['Hours','Days','Weeks','Months'];
+function drawRow(sc,lt){const s=SEC[sc.s],r=s.rows[sc.r],h=HERO[sc.s+'-'+sc.r],col=s.col,dur=S[sc.i].dur;
+  pill(s.n.toUpperCase(),60,64,col);text('Stage '+(sc.s+1)+' of 3',1020,64,22,K.sub,{al:'right',w:700});x.save();x.translate(0,h.note?0:70);
+  text(r[0],60,212,58,K.ink,{w:800});text(h.sub,60,282,28,K.sub,{w:600});
+  // big number: pops in, counts up
+  let v=h.val;const m=v.match(/^(~)(\d+(?:\.\d+)?)( .*)$/),cp=eio(pr(lt,.25,.9));if(m){const n=+m[2],d=m[2].includes('.')?1:0;v=m[1]+(n*cp).toFixed(d)+m[3]}
+  let sz=150;font(sz,800);while(x.measureText(h.val).width>950&&sz>60){sz-=4;font(sz,800)}
+  const pk=back(pr(lt,.2,.5));x.save();x.translate(60,430);x.scale(pk,pk);text(v,0,0,sz,col,{w:800});x.restore();
+  // four-step scale, one dot slides to the right step
+  const y=610,x0=110,dx=286,mv=eio(pr(lt,.7,.9)),pos=lerp(0,h.st[1],mv);
+  rr(x0,y-3,dx*3,6,3,'#e2e8f0');rr(x0,y-3,dx*pos,6,3,col);
+  STEPS.forEach((st,i)=>{const px=x0+dx*i,on=mv>.98&&i>=h.st[0]&&i<=h.st[1],rng=h.st[0]!==h.st[1]&&i>=h.st[0]&&i<=h.st[1]&&mv>.98;x.beginPath();x.arc(px,y,on?(rng&&i===h.st[0]?20:24):11,0,7);x.fillStyle=on||i<pos?col:'#fff';x.fill();x.lineWidth=4;x.strokeStyle=i<=pos+.01?col:'#cbd5e1';x.stroke();
+    text(st,px,y+58,28,on?col:K.sub,{al:'center',w:on?800:600})});
+  x.beginPath();x.arc(x0+dx*pos,y,24,0,7);x.fillStyle=col;x.fill();
+  // slowest
+  const ts=h.slowAt??Math.max(1.4,fw(sc.i,h.slowCue,0,dur*.45)-.15),sk=eo(pr(lt,ts,.45));
+  if(sk>0){x.save();x.globalAlpha*=sk;x.translate(0,(1-sk)*24);rr(60,740,960,110,24,'#fff',null,0,true);text('Slowest',100,795,26,K.sub,{w:700});
+    const nv=h.slow.endsWith('never'),main=nv?h.slow.slice(0,-5).trim():h.slow;let fs=34;font(fs,800);while(x.measureText(main).width>(nv?540:700)&&fs>22){fs-=2;font(fs,800)}
+    text(main,260,795,fs,K.ink,{w:800});if(nv){const w=x.measureText(main+' ').width;rr(260+w,769,140,52,26,'#fef2f2',K.red,2.5);text('never',260+w+70,796,30,K.red,{al:'center',w:800})}x.restore()}
+  // note
+  if(h.note){const nk=eo(pr(lt,fw(sc.i,h.noteCue,0,dur*.6)-.15,.45));if(nk>0){x.save();x.globalAlpha*=nk;x.translate(0,(1-nk)*24);const L=wrap(h.note,30,700,860);const hh=L.length*42+44;
+    rr(60,880,960,hh,24,s.tint,null,0);rr(60,880,10,hh,5,col);L.forEach((l,j)=>text(l,100,880+44+j*42,30,K.ink,{w:700}));x.restore()}}x.restore()}
+
+// ---------------- scene drawing + transitions ----------------
+const CEN=[540,560];
+function drawScene(i,lt,target=-1){const sc=SCN[i];if(sc.k==='full')drawFull(sc,lt);else if(sc.k==='sec')drawSec(sc,lt,target);else drawRow(sc,lt)}
+function zoomTo(px,py,s){x.translate(px,py);x.scale(s,s);x.translate(-px,-py)}
+function transition(i){const a=SCN[i-1],b=SCN[i];
+  if(b.k==='sec'&&a.k==='full')return {type:'in',piv:fullPivot(b.s)};
+  if(b.k==='row'&&a.k==='sec')return {type:'in',piv:secPivot(b.s,b.r),target:b.r};
+  if(b.k==='row'&&a.k==='row')return {type:'slide'};
+  if(b.k==='full'&&a.k==='full')return {type:'none'};
+  if(b.k==='full')return {type:'out',piv:fullPivot(a.s)};
+  return {type:'fade'}}
+function sceneAt(T){let si=S.findIndex((s,i)=>T<s.start+s.dur&&(i===S.length-1||T<S[i+1].start));if(si<0)si=S.length-1;if(T<S[0].start)si=0;return si}
+function drawStory(T){const si=sceneAt(T),lt=T-S[si].start,e=si>0?eio(lt/.7):1,eOut=si>0?eio(lt/.38):1,eIn=si>0?eio((lt-.28)/.42):1;
+  if(e>=1){drawScene(si,lt);return}
+  const tr=transition(si),pl=S[si-1].dur+lt;if(tr.type==='none'){drawScene(si,lt);return}
+  x.save();x.globalAlpha=1-eOut;
+  if(tr.type==='in')zoomTo(tr.piv[0],tr.piv[1],1+1.2*e);
+  if(tr.type==='out'){x.translate(lerp(CEN[0],tr.piv[0],e),lerp(CEN[1],tr.piv[1],e));x.scale(lerp(1,.45,e),lerp(1,.45,e));x.translate(-CEN[0],-CEN[1])}
+  if(tr.type==='slide')x.translate(-160*e,0);
+  drawScene(si-1,pl,tr.target??-1);x.restore();
+  x.save();x.globalAlpha=eIn;
+  if(tr.type==='in'){x.translate(lerp(tr.piv[0],CEN[0],e),lerp(tr.piv[1],CEN[1],e));x.scale(lerp(.45,1,e),lerp(.45,1,e));x.translate(-CEN[0],-CEN[1])}
+  if(tr.type==='out')zoomTo(tr.piv[0],tr.piv[1],lerp(2.2,1,e));
+  if(tr.type==='slide')x.translate(160*(1-e),0);
+  drawScene(si,lt);x.restore()}
+
+// ---------------- captions, source, watermark, end card ----------------
+const ALLW=S.flatMap((s,si)=>s.words.map(w=>({...w,si})));const CH=[];
+ALLW.forEach((w,i)=>{const p=ALLW[i-1],cur=CH[CH.length-1];if(!cur||cur.w.length>=3||w.si!==p.si||w.t-(p.t+p.d)>.22)CH.push({w:[w]});else cur.w.push(w)});
+CH.forEach((c,i)=>{c.t0=c.w[0].t;const l=c.w[c.w.length-1];c.t1=Math.min(CH[i+1]?CH[i+1].w[0].t:1e9,l.t+l.d+.5)});
+function captions(T){const c=CH.find(c=>T>=c.t0&&T<c.t1);if(!c)return;font(50,800);const full=c.w.map(w=>w.w).join(' '),w=x.measureText(full).width+70,k=eo((T-c.t0)/.15);
+  x.save();x.translate(540,1132);x.scale(.94+.06*k,.94+.06*k);rr(-w/2,-50,w,100,26,'rgba(15,23,42,.92)');let px=-w/2+35;
+  c.w.forEach(ww=>{const on=T>=ww.t-.03;text(ww.w,px,2,50,on?(T<ww.t+ww.d+.05?'#fff':'#cbd5e1'):'rgba(255,255,255,.2)',{w:800});px+=x.measureText(ww.w+' ').width});x.restore()}
+const me=new Image();const meReady=new Promise(r=>{me.onload=r;me.onerror=r;me.src='img/zakariya.jpg'});
+function chrome(a){if(a<=0)return;x.save();x.globalAlpha=a;rr(40,1222,1000,2,1,K.line);text('SOURCE',40,1268,17,K.blue,{w:800,ls:2});text('Gary Illyes, Google',135,1268,20,K.sub,{w:600});
+  const cx=1018,cy=1280;x.beginPath();x.arc(cx,cy,34,0,7);x.fillStyle='#fff';x.fill();x.save();x.beginPath();x.arc(cx,cy,31,0,7);x.clip();if(me.width)x.drawImage(me,cx-31,cy-31,62,62);x.restore();
+  x.lineWidth=3;x.strokeStyle=K.blue;x.beginPath();x.arc(cx,cy,32,0,7);x.stroke();text('By Zakariya',cx-46,1281,24,K.ink,{w:800,al:'right'});x.restore()}
+function endCard(T){const L=S.length-1,tf=S[L].start+fw(L,'Follow',0,99),k=eo(pr(T,tf,.4));if(k<=0)return 0;x.save();x.globalAlpha=k;x.fillStyle=K.bg;x.fillRect(0,0,W,1222);
+  const s=back(pr(T,tf,.5));x.save();x.translate(540,450);x.scale(s,s);x.beginPath();x.arc(0,0,170,0,7);x.fillStyle='#fff';x.fill();x.lineWidth=8;x.strokeStyle=K.blue;x.stroke();
+  x.save();x.beginPath();x.arc(0,0,164,0,7);x.clip();if(me.width)x.drawImage(me,-164,-164,328,328);x.restore();x.restore();
+  text('Zakariya',540,710,72,K.ink,{al:'center',w:800});text('SEO & GEO',540,780,32,K.sub,{al:'center',w:700});
+  const ck=eo(pr(T,tf+.3,.4));if(ck>0){x.save();x.globalAlpha*=ck;font(28,800);x.letterSpacing='3px';const t='FOLLOW FOR MORE SEO & GEO EXPLAINERS',w=x.measureText(t).width+64;x.letterSpacing='0px';rr(540-w/2,876,w,68,34,'#fff',K.blue,3);text(t,540,911,28,K.blue,{al:'center',w:800,ls:3});x.restore()}
+  x.restore();return k}
+function render(T){x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.fillStyle=K.bg;x.fillRect(0,0,W,1350);
+  drawStory(T);const ek=endCard(T);captions(T);chrome(1-ek)}
+window.render=render;window.TOTAL=TL.total;
+window.ready=Promise.all(['600','700','800'].map(w=>document.fonts.load(`${w} 40px Inter`)).concat(meReady));
+if(!location.hash.includes('render'))window.ready.then(()=>{const a=new Audio('build/voice.m4a');document.body.onclick=()=>{a.currentTime=0;a.play()};(function loop(){render(a.paused?((performance.now()/1000)%TL.total):a.currentTime);requestAnimationFrame(loop)})()});
+</script></body></html>
