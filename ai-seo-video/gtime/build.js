@@ -2,27 +2,27 @@
 const TINT={[BLUE]:'#eff6ff',[GREEN]:'#f0fdf4',[AMB]:'#fffbeb'};
 // [label, typical, slowest, lo, hi, slowestHi, scene, cue word]  (exact text from Google's chart)
 const GRP=[
- {n:'Crawling',sub:'How fast Google finds and fetches your pages',col:BLUE,s0:2,s1:7,size:'n',gap:138,
-  note:['Crawl capacity can drop in seconds when Google backs off, e.g. if your server struggles.',6,'drop'],rows:[
-  ['Discovery (new URL)','~20 hours','Weeks to never',20,20,NEVER,2,'new'],['Refresh (known URL)','~30 days','Weeks to never',MON,MON,NEVER,3,'known'],
-  ['Sitemap processing','~24 hours','Up to 14 days, or never (quality)',24,24,NEVER,4,'Sitemaps'],['robots.txt update','~24 hours','25 hours',24,24,25,5,['robots.txt','robots']],
-  ['Crawl capacity update','4 hours to 1–2 weeks','1–3 weeks (in recovery)',4,2*WK,3*WK,6,'capacity'],['Crawl demand update','~20 hours','Weeks to months',20,20,3*MON,7,'demand']]},
- {n:'Indexing',sub:'How fast Google processes and stores your pages',col:GREEN,s0:8,s1:17,size:'c',gap:88,rows:[
-  ['Rendering','Seconds to render, hours in the queue','Days to weeks',.002,5,3*WK,8,'Rendering'],['Meta annotations','45–90 minutes','1–4 days',.75,1.5,4*DAY,9,'Meta'],
-  ['Link annotations','Minutes to 1–3 weeks','Months',.05,3*WK,3*MON,10,'Link'],['Indexing (end to end)','~1.5 hours','Months or never (quality)',1.5,1.5,NEVER,11,'Indexing','End to end = all critical processes succeed'],
-  ['Removal','1–3 weeks','Months',WK,3*WK,3*MON,12,'Removing'],['Canonicalisation change','1–3 weeks','Months (conflicting signals)',WK,3*WK,3*MON,13,'canonical'],
-  ['Site move','1–3 months','6 months to 1 year+',MON,3*MON,1.4*YR,14,'site','Small site move: a few weeks'],['Structured data updates','Hours to 1–2 weeks','Weeks or never (quality)',2,2*WK,NEVER,15,'Structured'],
-  ['Images','Hours to days','Weeks to months',2,3*DAY,3*MON,16,'Images'],['Videos','Hours to days','Weeks to months (deep analysis)',2,3*DAY,3*MON,17,'Videos']]},
- {n:'Serving',sub:'How fast changes show up in search results',col:AMB,s0:18,s1:24,size:'n',gap:116,
-  note:['Core updates take 2–4 weeks to roll out. Spam updates roll out in 1–2 days.',23,'roll'],rows:[
-  ['Removal in Search Console (owner)','~2 hours','24 hours',2,2,24,18,'removal'],['Snippet update','1–2 days','Several weeks to months',DAY,2*DAY,3*MON,19,'Snippets'],
-  ['Title update','1–2 days','Several weeks to months',DAY,2*DAY,3*MON,20,'Titles'],['Text result image update','1–2 weeks','Several weeks to months',WK,2*WK,3*MON,21,'Text'],
-  ['Manual action removal','1–2 weeks','4–6 weeks, or much longer for dormant sites',WK,2*WK,8*WK,22,'manual'],['Core update change','3–6 months to recover','6 months to 1 year (next core update)',3*MON,6*MON,YR,23,'core'],
-  ['Spam update change','1–2 weeks (continuous)','Months (batch refreshes)',WK,2*WK,3*MON,24,'Spam']]},
+ {n:'Crawling',sub:'How fast Google finds and fetches your pages',col:BLUE,s0:1,s1:6,size:'n',gap:138,
+  note:['Crawl capacity can drop in seconds when Google backs off, e.g. if your server struggles.',5,'drop'],rows:[
+  ['Discovery (new URL)','~20 hours','Weeks to never',20,20,NEVER,1,'new'],['Refresh (known URL)','~30 days','Weeks to never',MON,MON,NEVER,2,'known'],
+  ['Sitemap processing','~24 hours','Up to 14 days, or never (quality)',24,24,NEVER,3,'Sitemaps'],['robots.txt update','~24 hours','25 hours',24,24,25,4,['robots.txt','robots']],
+  ['Crawl capacity update','4 hours to 1–2 weeks','1–3 weeks (in recovery)',4,2*WK,3*WK,5,'capacity'],['Crawl demand update','~20 hours','Weeks to months',20,20,3*MON,6,'demand']]},
+ {n:'Indexing',sub:'How fast Google processes and stores your pages',col:GREEN,s0:7,s1:16,size:'c',gap:96,rows:[
+  ['Rendering','Seconds to render, hours in the queue','Days to weeks',.002,5,3*WK,7,'Rendering'],['Meta annotations','45–90 minutes','1–4 days',.75,1.5,4*DAY,8,'Meta'],
+  ['Link annotations','Minutes to 1–3 weeks','Months',.05,3*WK,3*MON,9,'Link'],['Indexing (end to end)','~1.5 hours','Months or never (quality)',1.5,1.5,NEVER,10,'Indexing','End to end = all critical processes succeed'],
+  ['Removal','1–3 weeks','Months',WK,3*WK,3*MON,11,'Removing'],['Canonicalisation change','1–3 weeks','Months (conflicting signals)',WK,3*WK,3*MON,12,'canonical'],
+  ['Site move','1–3 months','6 months to 1 year+',MON,3*MON,1.4*YR,13,'site','Small site move: a few weeks'],['Structured data updates','Hours to 1–2 weeks','Weeks or never (quality)',2,2*WK,NEVER,14,'Structured'],
+  ['Images','Hours to days','Weeks to months',2,3*DAY,3*MON,15,'Images'],['Videos','Hours to days','Weeks to months (deep analysis)',2,3*DAY,3*MON,16,'Videos']]},
+ {n:'Serving',sub:'How fast changes show up in search results',col:AMB,s0:17,s1:23,size:'m',gap:120,
+  note:['Core updates take 2–4 weeks to roll out. Spam updates roll out in 1–2 days.',22,'roll'],rows:[
+  ['Removal in Search Console (owner)','~2 hours','24 hours',2,2,24,17,'removal'],['Snippet update','1–2 days','Several weeks to months',DAY,2*DAY,3*MON,18,'Snippets'],
+  ['Title update','1–2 days','Several weeks to months',DAY,2*DAY,3*MON,19,'Titles'],['Text result image update','1–2 weeks','Several weeks to months',WK,2*WK,3*MON,20,'Text'],
+  ['Manual action removal','1–2 weeks','4–6 weeks, or much longer for dormant sites',WK,2*WK,8*WK,21,'manual'],['Core update change','3–6 months to recover','6 months to 1 year (next core update)',3*MON,6*MON,YR,22,'core'],
+  ['Spam update change','1–2 weeks (continuous)','Months (batch refreshes)',WK,2*WK,3*MON,23,'Spam']]},
 ];
 const GT=(i,w,fb=.3)=>S[i].start+fw(i,w,0,fb); // global time of a spoken word
 GRP.forEach(g=>{g.rows.forEach(r=>r.cue=GT(r[6],r[7])-.15);g.T0=S[g.s0].start;g.T1=S[g.s1].start+S[g.s1].dur;if(g.note)g.noteT=GT(g.note[1],g.note[2])-.2});
-const SZ={n:{lab:32,typ:30,tr:26,th:20,sl:64,ss:22},c:{lab:27,typ:25,tr:19,th:14,sl:45,ss:18}};
+const SZ={n:{lab:32,typ:30,tr:26,th:20,sl:64,ss:22},m:{lab:30,typ:28,tr:24,th:18,sl:56,ss:20},c:{lab:26,typ:24,tr:18,th:14,sl:42,ss:17}};
 
 // one row of the chart as a time bar (T is global time)
 function row(r,y,T,col,sz,active){const [lab,typ,slow,lo,hi,sh]=r,cue=r.cue,k=eo(pr(T,cue-.1,.4));if(k<=0)return;
@@ -40,8 +40,8 @@ function row(r,y,T,col,sz,active){const [lab,typ,slow,lo,hi,sh]=r,cue=r.cue,k=eo
 
 // a whole section chart at global time T
 function chart(g,T){const sz=SZ[g.size];
-  const hk=eo(pr(T,g.T0,.45));text(g.n,90,430+(1-hk)*24,66,K.ink,{a:hk,w:800});text(g.sub,90,500,30,K.sub,{a:eo(pr(T,g.T0+.15,.45)),w:600});
-  const y0=560,n=g.rows.length,yEnd=y0+60+(n-1)*g.gap+sz.sl+10;axis(y0,yEnd,eo(pr(T,g.T0+.25,.45)));
+  const hk=eo(pr(T,g.T0,.45));text(g.n,90,412+(1-hk)*24,60,K.ink,{a:hk,w:800});text(g.sub,90,470,28,K.sub,{a:eo(pr(T,g.T0+.15,.45)),w:600});
+  const y0=508,n=g.rows.length,yEnd=y0+60+(n-1)*g.gap+sz.sl+10;axis(y0,yEnd,eo(pr(T,g.T0+.25,.45)));
   // the row currently being explained
   let cur=-1;g.rows.forEach((r,j)=>{if(T>=r.cue-.1)cur=j});
   g.rows.forEach((r,j)=>{const nx=g.rows[j+1],act=j===cur?(nx?1:1-eo(pr(T,g.T1-.6,.4))):0;row(r,y0+60+j*g.gap,T,g.col,sz,act)});
@@ -68,7 +68,7 @@ function intro0(t){const L=wrap('How long does Google take to crawl, index and s
   const th=fw(0,["here's","heres"],0,4),tc=fw(0,'crawl',0,1.5),ti=fw(0,'index',0,2),ts=fw(0,'show',0,2.5);
   [[0,tc],[1,ti],[2,ts]].forEach(([k,tt],j)=>stage(k,240+j*300,880,[BLUE,GREEN,AMB][j],eo(pr(t,.3+j*.12,.4)),t>tt-.1));
   const ck=eo(pr(t,.6,.4));if(ck>0){x.save();x.globalAlpha*=ck;clockFace(540,1150,90,(t*.15)%1,BLUE);x.restore()}
-  callout("HERE'S WHAT GOOGLE SAYS",540,1360,pr(t,th-.1,.4),BLUE)}
+  callout("HERE'S WHAT GOOGLE SAID",540,1340,pr(t,th-.1,.4),BLUE);chip('Google Search Central Deep Dive 2026',540,1440,pr(t,fw(0,'Search',0,6)-.1,.4),BLUE,K.blueS,26)}
 function intro1(t){const L=wrap('Gary Illyes shared Google’s own numbers',58,800,900);L.forEach((l,j)=>{const k=eo(pr(t,.05+j*.1,.4));text(l,90,430+j*67+(1-k)*24,58,K.ink,{a:k,w:800,max:3000})});
   const k=eo(pr(t,.2,.45));if(k<=0)return;x.save();x.globalAlpha*=k;x.translate(0,(1-k)*30);
   rr(90,640,900,250,30,'#fff',K.line,2,true);x.save();x.beginPath();x.arc(210,765,72,0,7);x.fillStyle=K.blueS;x.fill();x.restore();person(210,790,150,BLUE);
@@ -82,8 +82,7 @@ function intro1(t){const L=wrap('Gary Illyes shared Google’s own numbers',58,8
 // ----- timeline of "slides": intro, intro, 3 charts, full table
 const LASTI=S.length-1;
 const SLIDES=[{T0:S[0].start,T1:S[0].start+S[0].dur,draw:T=>intro0(T-S[0].start),tag:'GOOGLE SEARCH',col:BLUE},
- {T0:S[1].start,T1:S[1].start+S[1].dur,draw:T=>intro1(T-S[1].start),tag:'GOOGLE SEARCH',col:BLUE},
- ...GRP.map(g=>({T0:g.T0,T1:g.T1,draw:T=>chart(g,T),tag:g.n.toUpperCase(),col:g.col,g})),
+  ...GRP.map(g=>({T0:g.T0,T1:g.T1,draw:T=>chart(g,T),tag:g.n.toUpperCase(),col:g.col,g})),
  {T0:S[LASTI].start,T1:TL.total,draw:T=>fullTable(T,S[LASTI].start+.35),tag:'THE FULL TABLE',col:BLUE,last:1}];
 const tFollow=S[LASTI].start+fw(LASTI,'Follow',0,99);
 function slideAt(T){for(let i=SLIDES.length-1;i>=0;i--)if(T>=SLIDES[i].T0-.001)return i;return 0}
