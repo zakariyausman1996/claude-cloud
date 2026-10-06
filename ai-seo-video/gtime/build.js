@@ -30,7 +30,7 @@ function row(r,y,T,col,sz,active){const [lab,typ,slow,lo,hi,sh]=r,cue=r.cue,k=eo
   x.save();x.globalAlpha*=k;x.translate((1-k)*-40,0);
   text(lab,96,y,sz.lab,K.ink,{w:800,max:640});text(typ,984,y,sz.typ,col,{al:'right',w:800,max:3000});
   const ty=y+sz.tr;rr(AX0-20,ty,AXN-AX0+40,sz.th,sz.th/2,'#e9edf2');
-  const p1=eio(pr(T,cue+.15,.6)),p2=eio(pr(T,cue+.7,.9)),x0=TX(lo),x1=TX(hi),xs=TX(sh);
+  const p1=eio(pr(T,cue+.1,.45)),p2=eio(pr(T,cue+.5,.6)),x0=TX(lo),x1=TX(hi),xs=TX(sh);
   if(p2>0&&sh>hi){const e=lerp(x1,xs,p2);x.save();const g=x.createLinearGradient(x1,0,xs,0);g.addColorStop(0,col);g.addColorStop(1,sh>=NEVER?'rgba(220,38,38,.55)':K.red);x.globalAlpha*=.35;rr(x1,ty,Math.max(0,e-x1),sz.th,sz.th/2,g);x.restore();
     if(p2>.95){x.beginPath();x.arc(xs,ty+sz.th/2,sz.th/2,0,7);x.fillStyle=sh>=NEVER?K.red:'#f87171';x.fill()}}
   rr(x0-sz.th/2,ty,Math.max(sz.th,(x1-x0)*p1+sz.th),sz.th,sz.th/2,col);
