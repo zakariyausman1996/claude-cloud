@@ -98,7 +98,7 @@ let T_NOW=0;
 const LAST=S.length-1,BLUE=K.blue,PURP='#7c3aed';
 function fw(i,w,n=0,fb=0){const ws=Array.isArray(w)?w:[w];for(const q of ws){const m=S[i].words.filter(o=>o.w.toLowerCase().replace(/[^a-z0-9.'-]/g,'')===q.toLowerCase());if(m[n]||m[0])return (m[n]||m[0]).t-S[i].start}return fb}
 const HEADS=['How long does an AI citation last?','What is an AI citation?','Half gone in about 11 days',
- 'Most citations are a short burst','Each AI tool decides on its own','Cited by more AI tools, cited for longer','News fades first',
+ 'Most citations are a short burst','Each AI search engine decides on its own','Cited by more AI search engines, cited for longer','News fades first',
  'Fresh content gets cited','How to keep your AI citations',''];
 function head(i,t,sz0=60){let sz=sz0,lines=wrap(HEADS[i],sz,800,900);if(lines.length>2){sz=50;lines=wrap(HEADS[i],sz,800,900)}const lh=sz*1.16;
   lines.forEach((l,j)=>{const k=eo(pr(t,.05+j*.1,.4));text(l,90,430+j*lh+(1-k)*24,sz,K.ink,{a:k,w:800,max:3000})});return 430+lines.length*lh}
@@ -125,7 +125,7 @@ t=>{head(1,t);const tl=fw(1,'links',0,2.5),tc=fw(1,'citation',0,4.5),tv=fw(1,'vi
   [['Visibility',tv,320],['Traffic',tt,760]].forEach(([n,tt2,cx])=>{const a=pr(t,tt2-.1,.4);if(a<=0)return;x.save();x.globalAlpha*=eo(a);rr(cx-170,1200,340,120,26,'#fff',K.green,3,true);
     text(n,cx-20,1261,36,K.ink,{al:'center',w:800});x.restore();checkMark(cx+120,1260,24,a)})},
 // 2 THE ANSWER: 11 DAYS (source shown here)
-t=>{head(2,t);const ta=fw(2,'11',0,1),th=fw(2,'half',0,4),tw=fw(2,'11',1,5.5);text('883,000 pages · 7 AI tools · 1 year',90,740,26,K.sub,{w:700,a:eo(pr(t,fw(2,'tracked',0,6)-.1,.4))});
+t=>{head(2,t);const ta=fw(2,'11',0,1),th=fw(2,'half',0,4),tw=fw(2,'11',1,5.5);text('883,000 pages · 7 AI search engines · 1 year',90,740,26,K.sub,{w:700,a:eo(pr(t,fw(2,'tracked',0,6)-.1,.4))});
   const n=back(pr(t,ta-.1,.5));if(n>0){x.save();x.translate(90,640);x.scale(n,n);text('11 days',0,0,120,BLUE,{w:800});x.restore()}
   const k=eo(pr(t,.3,.5));if(k<=0)return;x.save();x.globalAlpha*=k;const X0=130,X1=960,Y0=1380,Y1=820;rr(90,760,900,700,28,'#fff',null,0,true);
   text('Citations',130,800,24,K.sub,{w:700});text('Days',950,1420,24,K.sub,{al:'right',w:700});x.strokeStyle='#e2e8f0';x.lineWidth=3;x.beginPath();x.moveTo(X0,Y0);x.lineTo(X1,Y0);x.stroke();
@@ -152,7 +152,7 @@ t=>{head(4,t);const tc=fw(4,'ChatGPT',0,3),td=fw(4,['doesnt',"doesn't"],0,4);
 // 6 BREADTH: 1.2% vs 6.8%
 t=>{head(5,t);const t5=fw(5,'five',0,1),tx=fw(5,'half',0,3),tm=fw(5,'months',0,5);const k=eo(pr(t,.2,.45));if(k<=0)return;
   x.save();x.globalAlpha*=k;rr(90,680,900,760,28,'#fff',null,0,true);text('Still cited after 2 months',130,730,26,K.sub,{w:700});
-  const base=1340,H=480;[['Cited by 1 AI tool',1.2,330,K.mute,.3],['Cited by 5+ AI tools',6.8,750,BLUE,t5-.1]].forEach(([n,v,cx,col,t0])=>{const g=eio(pr(t,t0,.8)),h=H*v/6.8*g;
+  const base=1340,H=480;[['Cited by 1 AI search engine',1.2,330,K.mute,.3],['Cited by 5+ AI search engines',6.8,750,BLUE,t5-.1]].forEach(([n,v,cx,col,t0])=>{const g=eio(pr(t,t0,.8)),h=H*v/6.8*g;
     rr(cx-110,base-h,220,h,18,col);text(v.toFixed(1)+'%',cx,base-h-34,40,col===K.mute?K.sub:col,{al:'center',w:800,a:g});text(n,cx,base+44,26,K.ink,{al:'center',w:700})});
   x.restore();callout('5.5× MORE LIKELY',540,640,pr(t,tx-.2,.4),BLUE)},
 // 7 NEWS FADES FIRST
@@ -163,12 +163,12 @@ t=>{head(6,t);const tn=fw(6,'News',0,.3),to=fw(6,'Comparisons',0,2.5);text('Amon
     const life=eio(pr(t,.6,Math.max(2,S[6].dur-1))),rem=Math.max(0,1-life*(30/d)*.8);rr(130,py+100,820,20,10,'#eef2f6');rr(130,py+100,820*rem,20,10,col);x.restore()})},
 // 8 FRESHNESS: half under 13 weeks
 t=>{head(7,t);const th=fw(7,'Half',0,1.5),t13=fw(7,'13',0,3);const k=eo(pr(t,.2,.45));if(k<=0)return;
-  x.save();x.globalAlpha*=k;rr(90,660,900,720,28,'#fff',null,0,true);text('Age of content AI tools cite',130,710,26,K.sub,{w:700});
+  x.save();x.globalAlpha*=k;rr(90,660,900,720,28,'#fff',null,0,true);text('Age of content AI search engines cite',130,710,26,K.sub,{w:700});
   for(let i=0;i<50;i++){const r=Math.floor(i/10),c=i%10,px=150+c*80,py=770+r*90,hot=i<25,on=t>th&&hot;pageIcon(px,py,54,64,on?BLUE:K.mute,eo(pr(t,.3+i*.01,.3)),on?K.blueS:'#fff')}
   const p=pr(t,t13-.1,.45);if(p>0){x.save();x.globalAlpha*=eo(p);rr(140,1240,800,90,20,K.blueS,BLUE,3);text('Half are less than 13 weeks old',540,1286,32,BLUE,{al:'center',w:800});x.restore()}
   x.restore()},
 // 9 WHAT TO DO
-t=>{head(8,t);const C=[['Answer specific questions clearly','answer'],['Refresh pages losing citations first','refresh'],['Get cited by many AI tools, not just one','many']];
+t=>{head(8,t);const C=[['Answer specific questions clearly','answer'],['Refresh pages losing citations first','refresh'],['Get cited by many AI search engines','many']];
   C.forEach(([s,w],j)=>{const tt=fw(8,w,0,1+j*2.5),a=eo(pr(t,tt-.3,.4)),py=680+j*210;if(a<=0)return;x.save();x.globalAlpha*=a;x.translate((1-a)*-50,0);
     rr(90,py,900,170,26,'#fff',K.green,3,true);text(s,140,py+86,34,K.ink,{w:800,max:700});x.restore();checkMark(930,py+85,30,pr(t,tt,.4))})},
 // 10 OUTRO
