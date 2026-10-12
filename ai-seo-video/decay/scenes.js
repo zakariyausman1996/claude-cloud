@@ -1,9 +1,9 @@
 // ---------- How long does an AI citation last? ----------
 const LAST=S.length-1,BLUE=K.blue,PURP='#7c3aed';
 function fw(i,w,n=0,fb=0){const ws=Array.isArray(w)?w:[w];for(const q of ws){const m=S[i].words.filter(o=>o.w.toLowerCase().replace(/[^a-z0-9.'-]/g,'')===q.toLowerCase());if(m[n]||m[0])return (m[n]||m[0]).t-S[i].start}return fb}
-const HEADS=['How long does an AI citation last?','What is an AI citation?','Half gone in about 11 days',
- 'Most citations are a short burst','Each AI search engine decides on its own','Cited by more AI search engines, cited for longer','News fades first',
- 'Fresh content gets cited','How to keep your AI citations',''];
+const HEADS=['How long does an AI citation last?','What is an AI citation?','How fast do AI citations fade?',
+ 'How many pages lose citations fast?','Does one AI citation lead to more?','Which pages stay cited longer?','Which content fades fastest?',
+ 'How old is the content AI cites?','How do you keep your AI citations?',''];
 function head(i,t,sz0=60){let sz=sz0,lines=wrap(HEADS[i],sz,800,900);if(lines.length>2){sz=50;lines=wrap(HEADS[i],sz,800,900)}const lh=sz*1.16;
   lines.forEach((l,j)=>{const k=eo(pr(t,.05+j*.1,.4));text(l,90,430+j*lh+(1-k)*24,sz,K.ink,{a:k,w:800,max:3000})});return 430+lines.length*lh}
 function clockFace(cx,cy,r,p,col){x.save();x.beginPath();x.arc(cx,cy,r,0,7);x.fillStyle='#fff';x.fill();x.lineWidth=10;x.strokeStyle='#e5e7eb';x.stroke();
