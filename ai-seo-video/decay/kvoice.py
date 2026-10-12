@@ -4,7 +4,7 @@ from kokoro import KPipeline
 FF = os.environ.get("FFMPEG", "ffmpeg")
 src = open("voice.py").read()
 SCENES = eval(src[src.index("SCENES = ") + 9:src.index("\n# spoken")])
-VOICE, SPEED, GAP, SR = "am_michael", 1.22, 0.25, 24000
+VOICE, SPEED, GAP, SR = "am_michael", 1.4, 0.15, 24000
 p = KPipeline(lang_code="a")
 os.makedirs("build", exist_ok=True)
 t, tl, mix = 0.2, [], []
