@@ -6,7 +6,9 @@ python3 - <<'P'
 p='shop.html';s=open(p).read()
 a=s.index("  if(si<LAST||lt<fw(LAST,'Follow',0,99)+.2){tagPill");b=s.index('\n',a);s=s[:a]+"  chromeTop(si,lt);"+s[b:]
 a=s.index("function sourceBar");b=s.index("function watermark")
-s=s[:a]+"function sourceBar(si,lt){if(si!==1)return;text('SOURCE',40,1268,17,K.blue,{w:800,ls:2});text('Growth Memo (Kevin Indig)',135,1268,20,K.sub,{w:600})}\n"+s[b:]
+s=s[:a]+"function sourceBar(){}\n"+s[b:]   # each number carries its own source label
 s=s.replace("watermark(si<LAST||lt<fw(LAST,'Follow',0,99)+.2?1:0)","watermark(si<LAST?1:0)")
+a="x=X;const dx=(1-fin)*140-(1-fout)*140;"
+assert a in s; s=s.replace(a,"x=X;const dx=NOSLIDE[si]?0:(1-fin)*140-(1-fout)*140;")
 open(p,'w').write(s)
 P
