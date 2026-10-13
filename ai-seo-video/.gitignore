@@ -19,3 +19,5 @@ gtime/build/
 gtime/*.log
 decay/build/
 decay/*.log
+shoploop/build/
+shoploop/*.log
